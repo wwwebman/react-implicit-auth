@@ -1,2 +1,3 @@
-# react-implicit-auth
-Implicit grant flow social authorization for SPA React Apps
+# React Implicit Authorization
+
+An implicit grant flow social authorization Provider for React SPA.

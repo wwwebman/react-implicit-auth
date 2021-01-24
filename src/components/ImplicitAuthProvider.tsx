@@ -1,43 +1,49 @@
 import React, { useEffect, useMemo } from 'react';
-
 import type { Configs } from '../adapters';
 import { createAdaptersApi } from '../adapters';
-import { ImplicitAuthContext } from './ImplicitAuthContext';
+import ImplicitAuthContext from './ImplicitAuthContext';
 
-interface ImplicitAuthProviderProps {
+export interface ImplicitAuthProviderProps {
+  /** Configurations for SDK providers. */
   configs: Configs;
 
-  /** Gets called on init error. */
+  /** Gets called on SDK init error. */
   onInitError?(error?: any): void;
 
-  /** Gets called on init success. */
+  /** Gets called on SDK init success. */
   onInitSuccess?(error?: any): void;
 
-  /** Inits sdk scripts on component mounting. */
+  /** Loads SDK scripts and initialize using `config` on page init. */
   autoInit?: boolean;
 
   /**
-   * Gets login status on page init.
-   * This can be helpful when the user refreshes a page because if a token
-   * has not been expired user can use the app without clicking login button.
+   * Gets login status on page init and allows to authenticate users automatically
+   * if a token has not been expired. This can be helpful when a user reloads the page.
+   * Normally, after page reload a user have to click login button again.
+   * Using this prop it might be done automatically.
    */
   autoLogin?: boolean;
 
   /** Gets called on login error. */
-  onLoginError?(error?: any): void;
+  onAutoLoginError?(error?: any): void;
 
   /** Gets called on login error. */
-  onLoginSuccess?(auth?: any): void;
+  onAutoLoginSuccess?(auth?: any): void;
 }
 
+/**
+ * A React context provider component that passes custom social API
+ * methods to the context.
+ */
 const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
+  autoInit = true,
   autoLogin = true,
   children,
   configs,
+  onAutoLoginError = () => {},
+  onAutoLoginSuccess = () => {},
   onInitError = () => {},
   onInitSuccess = () => {},
-  onLoginError = () => {},
-  onLoginSuccess = () => {},
 }) => {
   const adaptersApi = useMemo(() => createAdaptersApi(configs), [configs]);
 
@@ -46,10 +52,12 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
       async (adapterId: keyof typeof adaptersApi) => {
         const adapter = adaptersApi[adapterId];
 
-        await adapter.init().then(onInitSuccess, onInitError);
+        if (autoInit) {
+          await adapter.init().then(onInitSuccess, onInitError);
 
-        if (autoLogin) {
-          await adapter.autoLogin().then(onLoginSuccess, onLoginError);
+          if (autoLogin) {
+            await adapter.autoLogin().then(onAutoLoginSuccess, onAutoLoginError);
+          }
         }
       },
     );
@@ -62,4 +70,5 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
   );
 };
 
+/** @component */
 export default ImplicitAuthProvider;

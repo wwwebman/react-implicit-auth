@@ -1,21 +1,27 @@
 const path = require('path');
 const { name: packageName, version } = require('./package.json');
+const { theme, styles } = require('./styleguide/styles');
 
 module.exports = {
   assetsDir: './assets',
   title: packageName,
   pagePerSection: true,
   version,
+  theme,
+  styles,
+  skipComponentsWithoutExample: true,
   sections: [
     {
       name: 'Introduction',
       content: 'README.md',
     },
     {
-      name: 'API',
+      name: 'API Reference',
       exampleMode: 'expand',
       usageMode: 'expand',
       components: 'src/components/**/*.{jsx,tsx,ts,js}',
+      pagePerSection: true,
+      sectionDepth: 1,
     },
     {
       name: 'Examples',
@@ -29,7 +35,10 @@ module.exports = {
   ],
   styleguideDir: './dist/doc',
   styleguideComponents: {
-    StyleGuideRenderer: path.join(__dirname, 'styleguide/rsg/StyleGuideRenderer'),
+    StyleGuideRenderer: path.join(
+      __dirname,
+      'styleguide/rsg/StyleGuideRenderer',
+    ),
   },
   getComponentPathLine(p) {
     let componentName = path.basename(p).split('.')[0];
@@ -37,26 +46,11 @@ module.exports = {
     return `import { ${componentName} } from '${packageName}';`;
   },
   propsParser: (filePath, source, resolver, handlers) => {
-    const { ext } = path.parse(filePath);
-
-    return ext === '.tsx'
-      ? require('react-docgen-typescript').parse(
-          filePath,
-          source,
-          resolver,
-          handlers,
-        )
-      : require('react-docgen').parse(source, resolver, handlers);
+    return require('react-docgen-typescript')
+      .withCustomConfig('./tsconfig.json')
+      .parse(filePath, source, resolver, handlers);
   },
-  verbose: true,
   webpackConfig: {
-    resolve: {
-      extensions: ['.tsx', '.ts', '.js'],
-      alias: {
-        [packageName]: path.resolve(__dirname, 'src'),
-      },
-    },
-    devtool: 'source-map',
     module: {
       rules: [
         {
@@ -64,11 +58,17 @@ module.exports = {
           exclude: /node_modules/,
           loader: 'babel-loader',
         },
-        {
-          test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
-        },
       ],
+    },
+    resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.json'],
+      alias: {
+        [packageName]: path.resolve(__dirname, 'src'),
+      },
+    },
+    devtool: 'source-map',
+    devServer: {
+      compress: true,
     },
   },
 };

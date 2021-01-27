@@ -237,7 +237,6 @@ const google: Adapter<GoogleConfig> = (
     },
 
     /**
-     * Extends authorization scope.
      * @see https://developers.google.com/identity/sign-in/web/reference#googleusergrantoptions
      * @see https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#incrementalAuth
      */

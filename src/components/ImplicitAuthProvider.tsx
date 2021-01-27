@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from 'react';
-import type { Configs } from '../adapters';
+import { useEffect, useMemo } from 'react';
+import type { Configs } from '../adapters/types';
 import { createAdaptersApi } from '../adapters';
 import ImplicitAuthContext from './ImplicitAuthContext';
 

@@ -45,11 +45,9 @@ module.exports = {
 
     return `import { ${componentName} } from '${packageName}';`;
   },
-  propsParser: (filePath, source, resolver, handlers) => {
-    return require('react-docgen-typescript')
-      .withCustomConfig('./tsconfig.json')
-      .parse(filePath, source, resolver, handlers);
-  },
+  propsParser: require('react-docgen-typescript').withCustomConfig(
+    './tsconfig.json',
+  ).parse,
   webpackConfig: {
     module: {
       rules: [

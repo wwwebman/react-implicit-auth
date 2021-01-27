@@ -184,7 +184,6 @@ const facebook: Adapter<FbConfig> = (
     },
 
     /**
-     * Authorizes a user using default scope.
      * @see https://developers.facebook.com/docs/reference/javascript/FB.login
      */
     login() {
@@ -212,7 +211,6 @@ const facebook: Adapter<FbConfig> = (
     },
 
     /**
-     * Authorizes a user using default scope.
      * @see https://developers.facebook.com/docs/reference/javascript/FB.login
      */
     grant(scope) {
@@ -254,7 +252,6 @@ const facebook: Adapter<FbConfig> = (
     },
 
     /**
-     * Revoking login, de-authorize an app.
      * @see https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking
      */
     revoke(permissionName) {

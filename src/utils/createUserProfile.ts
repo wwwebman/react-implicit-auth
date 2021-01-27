@@ -1,11 +1,4 @@
-export interface UserProfile {
-  email: string;
-  firstName: string;
-  id: string;
-  lastName: string;
-  name: string;
-  avatarUrl: string;
-}
+import { UserProfile } from 'src/adapters/types';
 
 const createUserProfile = (data: any): UserProfile => {
   return {

@@ -1,7 +1,20 @@
 import { EventHandlerMap, Handler, WildcardHandler } from 'mitt';
 
-import { Auth } from '../utils/createAuth';
-import { UserProfile } from '../utils/createUserProfile';
+export interface AuthData {
+  expiresAt: string;
+  expiresIn: string;
+  grantedScopes: string;
+  token: string;
+}
+
+export interface UserProfile {
+  email: string;
+  firstName: string;
+  id: string;
+  lastName: string;
+  name: string;
+  avatarUrl: string;
+}
 
 export enum Events {
   api = 'api',
@@ -61,25 +74,69 @@ interface ApiRequestOptions {
 }
 
 export interface AdapterMethods {
+  /**
+   * Allows to make requests to provider API.
+   * @returns Promise => any data depends on provider API it requests.
+   */
   api(args?: ApiRequestOptions): Promise<{ data: any }>;
-  autoLogin(): Promise<Auth>;
+
+  /**
+   * Gets login status on page init and allows to authenticate users
+   * automatically if a token has not been expired.
+   * @returns Promise =>
+   * {expiresAt: string; expiresIn: string; grantedScopes: string; token: string;}
+   */
+  autoLogin(): Promise<AuthData>;
+
+  /**
+   * Retrieves authenticated user profile.
+   * @returns Promise =>
+   * {email: string; firstName: string; id: string; lastName: string; name: string; avatarUrl: string;}
+   */
   getUserProfile(): Promise<UserProfile>;
-  grant(scope: string): Promise<Auth>;
+
+  /**
+   * Extends authorization scope. The difference between login() and grant()
+   * is that the first one uses the scope defined in Configs object.
+   * Using this method it's possible to set different scope then defined
+   * in the initial config.
+   * @returns Promise =>
+   * {email: string; firstName: string; id: string; lastName: string; name: string; avatarUrl: string;}
+   */
+  grant(scope: string): Promise<AuthData>;
+
+  /**
+   * Initialize SDK provider script using config object.
+   * @returns Particular SDK library object.
+   */
   init(): Promise<object>;
-  login(): Promise<Auth>;
+
+  /**
+   * Calls provider login.
+   * @returns Promise =>
+   * {expiresAt: string; expiresIn: string; grantedScopes: string; token: string;}
+   */
+  login(): Promise<AuthData>;
+
+  /**
+   * Calls provider logout.
+   * @returns Promise =>
+   * {expiresAt: string; expiresIn: string; grantedScopes: string; token: string;}
+   */
   logout(): Promise<null>;
-  revoke(arg?: string): Promise<any>;
+
+  /**
+   * Revoking login, de-authorize an app.
+   */
+  revoke(permissions?: string): Promise<any>;
 }
 
 export interface AdapterEmitter {
   all: EventHandlerMap;
-
   on(type: '*', handler: WildcardHandler): void;
   on<T = any>(type: keyof typeof Events, handler: Handler<T>): void;
-
   off<T = any>(type: keyof typeof Events, handler: Handler<T>): void;
   off(type: '* ', handler: WildcardHandler): void;
-
   emit(type: '*', event?: any): void;
   emit<T = any>(type: keyof typeof Events, event?: T): void;
 }

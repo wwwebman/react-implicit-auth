@@ -1,7 +1,7 @@
 import { AdapterMethods } from '../adapters/types';
 
 /**
- * The reason for existing this component is a styleguidist limitation
+ * (!) The reason for existing this component is a styleguidist limitation
  * that doesn't allow to document context props in a better way.
  */
 

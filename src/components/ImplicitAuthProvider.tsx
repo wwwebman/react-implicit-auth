@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import type { Configs } from '../adapters/types';
 import { createAdaptersApi } from '../adapters';
 import ImplicitAuthContext from './ImplicitAuthContext';
@@ -56,7 +56,9 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
           await adapter.init().then(onInitSuccess, onInitError);
 
           if (autoLogin) {
-            await adapter.autoLogin().then(onAutoLoginSuccess, onAutoLoginError);
+            await adapter
+              .autoLogin()
+              .then(onAutoLoginSuccess, onAutoLoginError);
           }
         }
       },

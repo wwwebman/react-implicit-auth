@@ -1,9 +1,9 @@
 import loadSdk from '../utils/loadSdk';
 import createStatus from '../utils/createStatus';
-import { GoogleConfig } from './types';
+import {AuthData, GoogleConfig} from './types';
 import { Adapter, Events } from './types';
 import createEmitter from './emitter';
-import createAuth, { Auth } from '../utils/createAuth';
+import createAuth from '../utils/createAuth';
 import createUserProfile from '../utils/createUserProfile';
 
 const google: Adapter<GoogleConfig> = (
@@ -14,7 +14,7 @@ const google: Adapter<GoogleConfig> = (
 
   const handleLogin = (
     event: Events.login | Events.autoLogin,
-  ): Promise<Auth> => {
+  ): Promise<AuthData> => {
     return new Promise((resolve, reject) => {
       const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
@@ -72,8 +72,9 @@ const google: Adapter<GoogleConfig> = (
                   createStatus({
                     adapterId,
                     event,
-                    message: error?.message,
+                    message: error?.message ?? error?.details,
                     type: 'error',
+                    status: error?.error,
                   }),
                 );
               }

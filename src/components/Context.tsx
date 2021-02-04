@@ -8,7 +8,7 @@ import { AdapterMethods } from '../adapters/types';
 /**
  * Here you can find the list of context methods and props.
  *
- * @visibleName context methods
+ * @visibleName Context Methods
  */
 const Context: React.FC<AdapterMethods> = () => null;
 

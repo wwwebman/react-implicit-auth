@@ -10,10 +10,14 @@ const FacebookLoginButton = () => {
 };
 
 const App = () => {
-  const auth = useImplicitAuth();
-
   return (
     <ImplicitAuthProvider
+      onInitError={(e) => {
+        alert(e);
+      }}
+      onAutoLoginError={(e) => {
+        alert(e);
+      }}
       configs={{
         facebook: {
           debug: true,
@@ -29,17 +33,3 @@ const App = () => {
   );
 };
 ```
-
-Basically, `useImplicitAuth()` does the following to simplify end-user usage:
-
-```tsx static
-import { useContext } from 'react';
-import { ImplicitAuthContext } from 'react-implicit-auth';
-
-const FacebookLoginButton = () => {
-  const auth = useContext(ImplicitAuthContext);
-
-  return <button onClick={() => auth.facebook.login()}>{children}</button>;
-};
-```
-

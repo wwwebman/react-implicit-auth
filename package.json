@@ -12,7 +12,7 @@
     "provider"
   ],
   "scripts": {
-    "start": "styleguidist server",
+    "start": "styleguidist server --port 3000",
     "build": "styleguidist build",
     "format": "prettier --write src styleguide examples"
   },

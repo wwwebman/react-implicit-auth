@@ -1,6 +1,6 @@
 {
   "name": "react-implicit-auth",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A simple implicit social authorization provider for React SPA",
   "main": "index.js",
   "author": "Dmytro Chumak <hello@webman.pro> (https://webman.pro/)",
@@ -36,9 +36,11 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
+    "@material-ui/core": "^4.11.3",
     "mitt": "^2.1.0",
     "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react-dom": "^17.0.1",
+    "react-json-view": "^1.21.1"
   },
   "license": "MIT"
 }

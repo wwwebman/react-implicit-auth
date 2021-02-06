@@ -6,10 +6,11 @@ import { AdapterMethods } from '../adapters/types';
  */
 
 /**
- * Here you can find the list of context methods and props.
+ * On this page, you can find how to use and test context methods passed by
+ * `ImplicitAuthProvider` using React Context.
  *
  * @visibleName Context Methods
  */
-const Context: React.FC<AdapterMethods> = () => null;
+const Methods: React.FC<AdapterMethods> = () => null;
 
-export default Context;
+export default Methods;

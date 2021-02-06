@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
-import type { Configs } from '../adapters/types';
+import type { Config } from '../adapters/types';
 import { createAdaptersApi } from '../adapters';
 import ImplicitAuthContext from './ImplicitAuthContext';
 
 export interface ImplicitAuthProviderProps {
   /** Configurations for SDK providers. */
-  configs: Configs;
+  config: Config;
 
   /** Gets called on SDK init error. */
   onInitError?(error?: any): void;
@@ -39,18 +39,18 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
   autoInit = true,
   autoLogin = true,
   children,
-  configs,
+  config,
   onAutoLoginError = () => {},
   onAutoLoginSuccess = () => {},
   onInitError = () => {},
   onInitSuccess = () => {},
 }) => {
-  const adaptersApi = useMemo(() => createAdaptersApi(configs), [configs]);
+  const adaptersApi = useMemo(() => createAdaptersApi(config), [config]);
 
   useEffect(() => {
     Object.keys(adaptersApi).forEach(
-      async (adapterId: keyof typeof adaptersApi) => {
-        const adapter = adaptersApi[adapterId];
+      async (provider: keyof typeof adaptersApi) => {
+        const adapter = adaptersApi[provider];
 
         if (autoInit) {
           await adapter.init().then(onInitSuccess, onInitError);

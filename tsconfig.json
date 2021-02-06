@@ -24,10 +24,7 @@
     "sourceMap": true,
     "strict": false,
     "target": "es5",
-    "downlevelIteration": true,
-    "paths": {
-      "react-rabbit-form": ["src"]
-    }
+    "downlevelIteration": true
   },
   "include": ["src", "types.d.ts"],
   "exclude": ["node_modules"]

@@ -1,18 +1,18 @@
-import { Adapter } from './types';
+import { Adapter, AuthData } from './types';
 import createEmitter from './emitter';
 import { FbConfig, Events } from './types';
 
-import createAuth, { Auth } from '../utils/createAuth';
+import createAuth from '../utils/createAuth';
+import createMethodResult from '../utils/createMethodResult';
 import createUserProfile from '../utils/createUserProfile';
-import createStatus from '../utils/createStatus';
 import loadSdk from '../utils/loadSdk';
 
-export interface FbErrorResponse {
-  error?: { message?: string };
-}
-
 export interface FbApiResponse {
-  [key: string]: any;
+  data?: any;
+  error?: { message?: string };
+  method?: 'get' | 'post' | 'delete';
+  params?: object;
+  path?: string;
 }
 
 export interface FbAuthResponse {
@@ -25,12 +25,6 @@ export interface FbAuthResponse {
   } | null;
 }
 
-export interface FbApiResponse {
-  method?: 'get' | 'post' | 'delete';
-  params?: object;
-  path: string;
-}
-
 const facebook: Adapter<FbConfig> = (
   {
     appId,
@@ -41,7 +35,7 @@ const facebook: Adapter<FbConfig> = (
     version,
     xfbml,
   },
-  adapterId,
+  provider,
 ) => {
   const { on, off, emit, all } = createEmitter();
   const sdkSrc = debug
@@ -51,7 +45,7 @@ const facebook: Adapter<FbConfig> = (
   const handleLogin = (
     { status, authResponse }: FbAuthResponse,
     event: Events.login | Events.autoLogin,
-  ): Promise<Auth> => {
+  ): Promise<AuthData> => {
     return new Promise((resolve, reject) => {
       if (status === 'connected' && authResponse) {
         return resolve(createAuth(authResponse));
@@ -64,8 +58,8 @@ const facebook: Adapter<FbConfig> = (
       };
 
       return reject(
-        createStatus({
-          adapterId,
+        createMethodResult({
+          provider,
           event,
           message: messages[status],
           status,
@@ -89,7 +83,7 @@ const facebook: Adapter<FbConfig> = (
 
       return new Promise((resolve, reject) => {
         loadSdk({
-          adapterId,
+          provider,
           src: sdkSrc,
           onload() {
             const FB = window.FB;
@@ -99,8 +93,8 @@ const facebook: Adapter<FbConfig> = (
             FB.init({ appId, cookie, version, xfbml });
           },
           onerror() {
-            const errorStatus = createStatus({
-              adapterId,
+            const errorStatus = createMethodResult({
+              provider,
               event,
               message: 'Failed to load Facebook window.FB.',
               type: 'error',
@@ -120,29 +114,29 @@ const facebook: Adapter<FbConfig> = (
       const event = Events.api;
 
       return new Promise((resolve, reject) => {
-        window.FB.api(
-          path,
-          method,
-          params,
-          (response: FbApiResponse & FbErrorResponse) => {
-            const result = { data: response?.data ?? response };
+        window.FB.api(path, method, params, (response: FbApiResponse) => {
+          if (!response || response.error) {
+            const errorStatus = createMethodResult({
+              provider,
+              event,
+              message: response?.error?.message ?? 'An unexpected error occurred.',
+              type: 'error',
+            });
 
-            if (!response || response.error) {
-              const errorStatus = createStatus({
-                adapterId,
-                event,
-                message: response?.error?.message ?? 'Request error occurred.',
-                type: 'error',
-              });
+            emit(Events.error, errorStatus);
+            return reject(errorStatus);
+          }
 
-              emit(Events.error, errorStatus);
-              return reject(errorStatus);
-            }
+          const successResponse = createMethodResult({
+            provider,
+            data: response?.data ?? {},
+            event,
+            type: 'error',
+          });
 
-            emit(event, result);
-            resolve(result);
-          },
-        );
+          emit(event, successResponse);
+          resolve(successResponse);
+        });
       });
     },
 

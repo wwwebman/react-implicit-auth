@@ -43,10 +43,19 @@ module.exports = {
   getComponentPathLine(p) {
     let componentName = path.basename(p).split('.')[0];
 
+    if (componentName === 'Methods') {
+      return '';
+    }
+
     return `import { ${componentName} } from '${packageName}';`;
   },
   propsParser: require('react-docgen-typescript').withCustomConfig(
     './tsconfig.json',
+    {
+      shouldExtractValuesFromUnion: true,
+      shouldExtractLiteralValuesFromEnum: true,
+      savePropValueAsString: true,
+    }
   ).parse,
   webpackConfig: {
     module: {
@@ -56,6 +65,8 @@ module.exports = {
           exclude: /node_modules/,
           loader: 'babel-loader',
         },
+        {test: /\.css$/, loader: 'css-loader'},
+        {test: /\.svg$/, loader: 'file-loader'}
       ],
     },
     resolve: {

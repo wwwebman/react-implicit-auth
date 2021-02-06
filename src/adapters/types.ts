@@ -16,6 +16,10 @@ export interface UserProfile {
   avatarUrl: string;
 }
 
+interface ProviderSdk {
+  [key: string]: any;
+}
+
 export enum Events {
   api = 'api',
   autoLogin = 'autoLogin',
@@ -27,15 +31,15 @@ export enum Events {
   userProfile = 'userProfile',
 }
 
-export enum Methods {
+export enum HttpMethods {
   GET = 'GET',
   POST = 'POST',
   DELETE = 'DELETE',
 }
 
-export type AdapterId = 'facebook' | 'google';
+export type Provider = 'facebook' | 'google';
 
-export interface Config {
+export interface ProviderConfig {
   debug?: boolean;
   lang?: string;
   scope?: string;
@@ -44,7 +48,7 @@ export interface Config {
 /**
  * @see https://developers.facebook.com/docs/javascript/reference/FB.init
  */
-export interface FbConfig extends Config {
+export interface FbConfig extends ProviderConfig {
   appId: string;
   cookie?: boolean;
   status?: boolean;
@@ -55,80 +59,77 @@ export interface FbConfig extends Config {
 /**
  * @see https://developers.google.com/identity/sign-in/web/reference#gapiauth2clientconfig
  */
-export interface GoogleConfig extends Config {
+export interface GoogleConfig extends ProviderConfig {
   apiKey?: string;
   clientId: string;
   discoveryDocs?: string;
 }
 
-export interface Configs {
+export interface Config {
   facebook?: FbConfig;
   google?: GoogleConfig;
 }
 
 interface ApiRequestOptions {
   path: string;
-  method?: keyof typeof Methods;
+  method?: keyof typeof HttpMethods;
   params?: object;
   body?: string | object;
+}
+
+export interface MethodResult<TData = any> {
+  provider: Provider;
+  data?: TData;
+  event: string;
+  message?: string;
+  status?: string | number;
+  type: 'error' | 'success';
 }
 
 export interface AdapterMethods {
   /**
    * Allows to make requests to provider API.
-   * @returns Promise => any data depends on provider API it requests.
    */
-  api(args?: ApiRequestOptions): Promise<{ data: any }>;
+  api(args?: ApiRequestOptions): Promise<MethodResult>;
 
   /**
    * Gets login status on page init and allows to authenticate users
    * automatically if a token has not been expired.
-   * @returns Promise =>
-   * {expiresAt: string; expiresIn: string; grantedScopes: string; token: string;}
    */
-  autoLogin(): Promise<AuthData>;
+  autoLogin(): Promise<MethodResult<AuthData>>;
 
   /**
    * Retrieves authenticated user profile.
-   * @returns Promise =>
-   * {email: string; firstName: string; id: string; lastName: string; name: string; avatarUrl: string;}
    */
-  getUserProfile(): Promise<UserProfile>;
+  getUserProfile(): Promise<MethodResult<UserProfile>>;
 
   /**
    * Extends authorization scope. The difference between login() and grant()
-   * is that the first one uses the scope defined in Configs object.
+   * is that the first one uses the scope defined in Config object.
    * Using this method it's possible to set different scope then defined
    * in the initial config.
-   * @returns Promise =>
-   * {email: string; firstName: string; id: string; lastName: string; name: string; avatarUrl: string;}
    */
-  grant(scope: string): Promise<AuthData>;
+  grant(scope: string): Promise<MethodResult<AuthData>>;
 
   /**
    * Initialize SDK provider script using config object.
-   * @returns Particular SDK library object.
    */
-  init(): Promise<object>;
+  init(): Promise<MethodResult<ProviderSdk>>;
 
   /**
    * Calls provider login.
-   * @returns Promise =>
-   * {expiresAt: string; expiresIn: string; grantedScopes: string; token: string;}
    */
-  login(): Promise<AuthData>;
+  login(): Promise<MethodResult<AuthData>>;
 
   /**
    * Calls provider logout.
-   * @returns Promise =>
-   * {expiresAt: string; expiresIn: string; grantedScopes: string; token: string;}
    */
-  logout(): Promise<null>;
+  logout(): Promise<MethodResult<null>>;
 
   /**
    * Revoking login, de-authorize an app.
    */
-  revoke(permissions?: string): Promise<any>;
+  revoke(permissions?: string): Promise<MethodResult>;
 }
 
 export interface AdapterEmitter {
@@ -141,13 +142,16 @@ export interface AdapterEmitter {
   emit<T = any>(type: keyof typeof Events, event?: T): void;
 }
 
-export type AdapterApi = AdapterMethods & AdapterEmitter;
-
-export type Adapter<T = any> = (config: T, adapterId: AdapterId) => AdapterApi;
+export type Adapter<T = any> = (
+  config: T,
+  provider: Provider,
+) => AdapterMethods & AdapterEmitter;
 
 export interface Adapters {
   facebook?: Adapter;
   google?: Adapter;
 }
 
-export type AdaptersApi = Partial<Record<AdapterId, AdapterApi>>;
+export type AdaptersApi = Partial<
+  Record<Provider, AdapterMethods & AdapterEmitter>
+>;

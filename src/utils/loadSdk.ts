@@ -1,5 +1,5 @@
 interface LoadSdk {
-  adapterId: string;
+  provider: string;
   async?: boolean;
   defer?: boolean;
   onerror?(e: ErrorEvent): void;
@@ -8,14 +8,14 @@ interface LoadSdk {
 }
 
 const loadSdk = ({
-  adapterId,
+  provider,
   async = true,
   defer = true,
   onerror = null,
   onload = null,
   src,
 }: LoadSdk) => {
-  const id = `${adapterId}-sdk`;
+  const id = `${provider}-sdk`;
   const firstJs = document.getElementsByTagName('script')[0];
   const js = document.createElement('script');
 

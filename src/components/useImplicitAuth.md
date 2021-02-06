@@ -18,7 +18,7 @@ const App = () => {
       onAutoLoginError={(e) => {
         alert(e);
       }}
-      configs={{
+      config={{
         facebook: {
           debug: true,
           appId: '****************',

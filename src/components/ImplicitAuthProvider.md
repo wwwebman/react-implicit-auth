@@ -11,7 +11,7 @@ import { ImplicitAuthProvider } from 'react-implicit-auth';
 
 const YourApp = () => (
   <ImplicitAuthProvider
-    configs={{
+    config={{
       facebook: {
         debug: true,
         appId: '****************',

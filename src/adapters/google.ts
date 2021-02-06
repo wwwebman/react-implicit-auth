@@ -1,14 +1,31 @@
 import loadSdk from '../utils/loadSdk';
-import createStatus from '../utils/createStatus';
-import {AuthData, GoogleConfig} from './types';
+import createMethodResult from '../utils/createMethodResult';
+import { AuthData, GoogleConfig } from './types';
 import { Adapter, Events } from './types';
 import createEmitter from './emitter';
 import createAuth from '../utils/createAuth';
 import createUserProfile from '../utils/createUserProfile';
 
+interface GoogleApiResponse {
+  statusText?: null | string;
+  status?: number;
+  result?:
+    | {
+        error: {
+          message?: string;
+          status?: number;
+          code: number;
+        };
+      }
+    | object;
+  body?: string;
+  headers?: any;
+  message?: string;
+}
+
 const google: Adapter<GoogleConfig> = (
   { apiKey, clientId, discoveryDocs, scope: initialScope = 'profile email' },
-  adapterId,
+  provider,
 ) => {
   const { on, off, emit, all } = createEmitter();
 
@@ -20,8 +37,8 @@ const google: Adapter<GoogleConfig> = (
 
       if (!GoogleAuth.isSignedIn.get()) {
         return reject(
-          createStatus({
-            adapterId,
+          createMethodResult({
+            provider,
             event,
             message: 'Not authenticated.',
             type: 'error',
@@ -52,7 +69,7 @@ const google: Adapter<GoogleConfig> = (
 
       return new Promise((resolve, reject) => {
         loadSdk({
-          adapterId,
+          provider,
           src: '//apis.google.com/js/api.js',
           onload() {
             const gapi = window.gapi;
@@ -65,32 +82,42 @@ const google: Adapter<GoogleConfig> = (
                   discoveryDocs,
                   scope: initialScope,
                 });
-                emit(event, gapi);
-                resolve(gapi);
+
+                const successResult = createMethodResult({
+                  data: gapi,
+                  event,
+                  provider,
+                  type: 'success',
+                });
+
+                emit(event, successResult);
+                resolve(successResult);
               } catch (error) {
-                reject(
-                  createStatus({
-                    adapterId,
-                    event,
-                    message: error?.message ?? error?.details,
-                    type: 'error',
-                    status: error?.error,
-                  }),
-                );
+                const errorResult = createMethodResult({
+                  provider,
+                  event,
+                  message: error?.message ?? error?.details,
+                  type: 'error',
+                  status: error?.error,
+                });
+
+                emit(event, errorResult);
+                reject(errorResult);
               }
             };
 
             gapi.load('client:auth2', init);
           },
           onerror() {
-            reject(
-              createStatus({
-                adapterId,
-                event,
-                message: `Failed to load Google SDK.`,
-                type: 'error',
-              }),
-            );
+            const errorResult = createMethodResult({
+              provider,
+              event,
+              message: `Failed to load Google SDK.`,
+              type: 'error',
+            });
+
+            emit(event, errorResult);
+            reject(errorResult);
           },
         });
       });
@@ -102,57 +129,40 @@ const google: Adapter<GoogleConfig> = (
     api({ path, method = 'GET', params = {}, body }) {
       const event = Events.api;
 
-      return new Promise((resolve, reject) => {
-        window.gapi.client
-          .request({
+      return new Promise(async (resolve, reject) => {
+        try {
+          const response: GoogleApiResponse = await window.gapi.client.request({
             method,
             path,
             params,
             body,
-          })
-          .then(
-            (response: {
-              statusText: null | string;
-              status: number;
-              result: any;
-              body: string;
-              headers: any;
-            }) => {
-              const result = { data: response?.result };
+          });
 
-              emit(event, result);
-              resolve(result);
-            },
-          )
-          .catch(
-            (response: {
-              body: string;
-              headers: object;
-              result: {
-                error: {
-                  message?: string;
-                  status?: number;
-                  code: number;
-                };
-              };
-              status: number;
-              statusText?: string | null;
-            }) => {
-              const errorStatus = createStatus({
-                adapterId,
-                event,
-                message:
-                  response?.result?.error?.message ??
-                  response?.statusText ??
-                  'Request error occurred.',
-                status: response?.result?.error?.status ?? response?.status,
-                type: 'error',
-              });
+          const successResult = createMethodResult({
+            provider,
+            data: response?.result,
+            event,
+            type: 'success',
+          });
 
-              emit(event, errorStatus);
-              reject(errorStatus);
-            },
-          );
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (e) {
+          const errorResult = createMethodResult({
+            provider,
+            event,
+            message:
+              e?.message ??
+              e?.result?.error?.message ??
+              e?.statusText ??
+              'An unexpected error occurred.',
+            status: e?.result?.error?.status ?? e?.status,
+            type: 'error',
+          });
+
+          emit(Events.error, errorResult);
+          reject(errorResult);
+        }
       });
     },
 
@@ -164,8 +174,7 @@ const google: Adapter<GoogleConfig> = (
           .getAuthInstance()
           .currentUser.get()
           .getBasicProfile();
-
-        const profile = createUserProfile({
+        const data = createUserProfile({
           avatarUrl: GoogleUser.getImageUrl(),
           email: GoogleUser.getEmail(),
           firstName: GoogleUser.getGivenName(),
@@ -173,9 +182,15 @@ const google: Adapter<GoogleConfig> = (
           lastName: GoogleUser.getFamilyName(),
           name: GoogleUser.getName(),
         });
+        const successResult = createMethodResult({
+          data,
+          event,
+          provider,
+          type: 'success',
+        });
 
-        emit(event, profile);
-        resolve(profile);
+        emit(event, successResult);
+        resolve(successResult);
       });
     },
 
@@ -187,13 +202,29 @@ const google: Adapter<GoogleConfig> = (
 
       return new Promise((resolve, reject) => {
         handleLogin(event)
-          .then((auth) => {
-            emit(event, auth);
-            resolve(auth);
+          .then((data) => {
+            const successResult = createMethodResult({
+              data,
+              event,
+              provider,
+              type: 'success',
+            });
+
+            emit(event, successResult);
+            resolve(successResult);
           })
           .catch((error) => {
-            emit(Events.error, error);
-            reject(error);
+            const errorResult = createMethodResult({
+              data: error,
+              event,
+              message: error?.message ?? error?.details,
+              provider,
+              status: error?.error,
+              type: 'error',
+            });
+
+            emit(Events.error, errorResult);
+            reject(errorResult);
           });
       });
     },
@@ -213,25 +244,42 @@ const google: Adapter<GoogleConfig> = (
         GoogleAuth.signIn()
           .then(() =>
             handleLogin(event)
-              .then((auth) => {
-                emit(event, auth);
-                resolve(auth);
+              .then((data) => {
+                const successResult = createMethodResult({
+                  data,
+                  event,
+                  provider,
+                  type: 'success',
+                });
+
+                emit(event, successResult);
+                resolve(successResult);
               })
               .catch((error) => {
-                emit(Events.error, error);
-                reject(error);
+                const errorResult = createMethodResult({
+                  data: error,
+                  event,
+                  message: error?.message ?? error?.details,
+                  provider,
+                  status: error?.error,
+                  type: 'error',
+                });
+
+                emit(Events.error, errorResult);
+                reject(errorResult);
               }),
           )
-          .catch(({ error }: { error: string }) => {
-            const errorStatus = createStatus({
-              adapterId,
+          .catch((error: any) => {
+            const errorStatus = createMethodResult({
+              data: error,
               event,
               message: 'Login error occurred.',
-              status: error,
+              provider,
+              status: error?.error,
               type: 'error',
             });
 
-            emit(event, errorStatus);
+            emit(Events.error, errorStatus);
             reject(errorStatus);
           });
       });
@@ -250,13 +298,29 @@ const google: Adapter<GoogleConfig> = (
 
         GoogleUser.grant({ scope }).then(() =>
           handleLogin(event)
-            .then((auth) => {
-              emit(event, auth);
-              resolve(auth);
+            .then((data) => {
+              const successResult = createMethodResult({
+                data,
+                event,
+                provider,
+                type: 'success',
+              });
+
+              emit(event, successResult);
+              resolve(successResult);
             })
             .catch((error) => {
-              emit(Events.error, error);
-              reject(error);
+              const errorStatus = createMethodResult({
+                data: error,
+                event,
+                message: error?.error ?? error?.message,
+                provider,
+                status: error,
+                type: 'error',
+              });
+
+              emit(Events.error, errorStatus);
+              reject(errorStatus);
             }),
         );
       });
@@ -273,10 +337,29 @@ const google: Adapter<GoogleConfig> = (
 
         GoogleAuth.signOut()
           .then(() => {
-            emit(event, null);
-            resolve(null);
+            const successResult = createMethodResult({
+              data: null,
+              event,
+              provider,
+              type: 'success',
+            });
+
+            emit(event, successResult);
+            resolve(successResult);
           })
-          .catch(reject);
+          .catch((error: any) => {
+            const errorStatus = createMethodResult({
+              data: error,
+              event,
+              message: error?.message,
+              provider,
+              status: error,
+              type: 'error',
+            });
+
+            emit(Events.error, errorStatus);
+            reject(errorStatus);
+          });
       });
     },
 
@@ -290,11 +373,30 @@ const google: Adapter<GoogleConfig> = (
         const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
         GoogleAuth.disconnect()
-          .then((response: any) => {
-            emit(event, response);
-            resolve(response);
+          .then((data: any) => {
+            const successResult = createMethodResult({
+              data,
+              event,
+              provider,
+              type: 'success',
+            });
+
+            emit(event, successResult);
+            resolve(successResult);
           })
-          .catch(reject);
+          .catch((error: any) => {
+            const errorStatus = createMethodResult({
+              data: error,
+              event,
+              message: error?.error ?? error?.message,
+              provider,
+              status: error,
+              type: 'error',
+            });
+
+            emit(Events.error, errorStatus);
+            reject(errorStatus);
+          });
       });
     },
   };

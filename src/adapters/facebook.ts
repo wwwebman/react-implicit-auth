@@ -8,7 +8,7 @@ import createUserProfile from '../utils/createUserProfile';
 import loadSdk from '../utils/loadSdk';
 
 export interface FbApiResponse {
-  data?: any;
+  data: any;
   error?: { message?: string };
   method?: 'get' | 'post' | 'delete';
   params?: object;

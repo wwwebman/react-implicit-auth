@@ -11,7 +11,7 @@ const theme = {
     codeFunction: '#DD4A68',
     codeVariable: '#e90',
   },
-  maxWidth: 800,
+  maxWidth: 850,
   sidebarWidth: 250,
 };
 

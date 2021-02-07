@@ -8,9 +8,21 @@ Put `<ImplicitAuthProvider />` somewhere high in your app, above components that
 
 ```tsx static
 import { ImplicitAuthProvider } from 'react-implicit-auth';
+import MyPage from './MyPage'
 
-const YourApp = () => (
+const handleAuthProviderError = (error) => {
+  console.error(error);
+}
+const handleAuthProviderSuccess = (data) => {
+  console.log(data);
+}
+
+const MyApp = () => (
   <ImplicitAuthProvider
+    onInitError={handleAuthProviderError}
+    onAutoLoginError={handleAuthProviderError}
+    onAutoLoginSuccess={handleAuthProviderSuccess}
+    onInitSuccess={handleAuthProviderSuccess}
     config={{
       facebook: {
         debug: true,
@@ -25,7 +37,7 @@ const YourApp = () => (
       },
     }}
   >
-    <ChildComponent />
+    <MyPage />
   </ImplicitAuthProvider>
 );
 ```

@@ -2,9 +2,10 @@
 
 ### Config
 
-The config object is **required**.
-You can modify it to your own configuration.
-Otherwise, feel free to use the existing one:
+The config object gets distributed to each provider's adapter.
+You can modify the configuration or use the existing one.
+The configuration modification gets synchronized with local storage.
+Don't be afraid to refresh the page if you need.
 
 ```jsx noeditor
 import ImplicitAuthContext from './ImplicitAuthContext';
@@ -12,6 +13,9 @@ import ImplicitAuthProvider from './ImplicitAuthProvider';
 import ReactJson from 'react-json-view';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useEffect, useRef, useState, useMemo } from 'react';
+import Fab from '@material-ui/core/Fab';
+import Paper from '@material-ui/core/Paper';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
 const defaultConfig = useMemo(
   () =>
@@ -30,44 +34,42 @@ const defaultConfig = useMemo(
     }),
   [],
 );
-const [configFromStorage, setConfig] = useState(() =>
-  JSON.parse(localStorage.getItem('config') || defaultConfig),
+const configFromStorage = useMemo(() =>
+  JSON.parse(localStorage.getItem('config') || defaultConfig, []),
 );
-const [authFromStorage, setAuth] = useState(() =>
-  JSON.parse(localStorage.getItem('auth') || '{}'),
-);
+const [configUpdated, setConfigUpdated] = useState(false);
+const [authData, setAuthData] = useState({});
 const [responses, setResponses] = useState({});
 
 const handleConfigChange = ({ updated_src }) => {
-  setConfig(updated_src);
+  const newConfig = JSON.stringify(updated_src);
+
   localStorage.setItem('config', JSON.stringify(updated_src));
+
+  if (JSON.stringify(configFromStorage) !== newConfig) {
+    setConfigUpdated(true);
+  }
 };
 
-const handleLoginSuccess = (provider) => (result) => {
-  setAuth({ ...authFromStorage, [provider]: result });
-  localStorage.setItem('auth', JSON.stringify(authFromStorage));
+const handleInitError = (error) => {
+  alert(JSON.stringify(error, null, 2));
 };
 
-<ImplicitAuthProvider config={configFromStorage}>
-  <ReactJson
-    indentWidth={4}
-    name={false}
-    onAdd={handleConfigChange}
-    onDelete={handleConfigChange}
-    onEdit={handleConfigChange}
-    src={configFromStorage}
-    style={{ margin: '20px 0' }}
-  />
+<ImplicitAuthProvider
+  config={configFromStorage}
+  onInitError={handleInitError}
+>
   <ImplicitAuthContext.Consumer>
     {(auth) => {
       const methods = {
-        api: {
-          facebook: () => auth.facebook.api({ path: '' }),
-          google: () => auth.google.api({ path: '' }),
+        login: {
+          facebook: () => auth.facebook.login(),
+          google: () => auth.google.login(),
         },
-        autoLogin: {
-          facebook: () => auth.facebook.autoLogin(),
-          google: () => auth.google.autoLogin(),
+        init: {
+          facebook: () => auth.facebook.init(),
+          google: () => auth.google.init(),
+          description: `The method gets called on the ImplicitAuthProvider mount phase. You don't need to call manually it in most cases.`,
         },
         getUserProfile: {
           facebook: () => auth.facebook.getUserProfile(),
@@ -77,13 +79,13 @@ const handleLoginSuccess = (provider) => (result) => {
           facebook: () => auth.facebook.grant(),
           google: () => auth.google.grant(),
         },
-        init: {
-          facebook: () => auth.facebook.init(),
-          google: () => auth.google.init(),
-        },
-        login: {
-          facebook: () => auth.facebook.login(),
-          google: () => auth.google.login(),
+        api: {
+          facebook: () => auth.facebook.api({ path: '' }),
+          google: () =>
+            auth.google.api({
+              path: 'https://people.googleapis.com/v1/people/me',
+              params: { personFields: 'names' },
+            }),
         },
         logout: {
           facebook: () => auth.facebook.logout(),
@@ -93,44 +95,54 @@ const handleLoginSuccess = (provider) => (result) => {
           facebook: () => auth.facebook.revoke(),
           google: () => auth.google.revoke(),
         },
+        autoLogin: {
+          facebook: () => auth.facebook.autoLogin(),
+          google: () => auth.google.autoLogin(),
+        },
       };
 
       return (
         <>
-          {Object.keys(configFromStorage).map((provider) => (
-            <button
-              key={provider}
-              onClick={() =>
-                auth[provider]
-                  .login()
-                  .then(handleLoginSuccess(provider), (error) => {
-                    alert(
-                      `A ${provider} login error occurred. Error details: ${JSON.stringify(
-                        error,
-                        null,
-                        2,
-                      )}`,
-                    );
-                  })
-              }
-              type="button"
-              style={{ margin: 5 }}
-            >
-              {authFromStorage[provider] && <>&#10003;</>} Login {provider}
-            </button>
-          ))}
-          <h3>Methods usage</h3>
+          <div style={{ position: 'relative' }}>
+            <ReactJson
+              indentWidth={4}
+              name={false}
+              onAdd={handleConfigChange}
+              onDelete={handleConfigChange}
+              onEdit={handleConfigChange}
+              src={configFromStorage}
+              style={{ margin: '20px 0' }}
+              collapseStringsAfterLength={35}
+            />
+            {configUpdated && (
+              <div style={{ position: 'absolute', top: 0, right: 0 }}>
+                <Tooltip title="Config change requires a page refresh to init providers SDK using the new configuration.">
+                  <Fab
+                    size="medium"
+                    color="secondary"
+                    onClick={() => location.reload()}
+                  >
+                    <RefreshIcon />
+                  </Fab>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+          <h2>Methods</h2>
+          <p>
+            Using ImplicitAuthProvider the following methods get accessible in
+            the React context.
+          </p>
           {Object.keys(methods).map((method) => (
-            <div
+            <Paper
               key={method}
               style={{
-                background: '#fcfcfc',
-                border: '1px #ccc solid',
                 margin: '20px 0',
-                padding: '0 20px 10px',
+                padding: '10px 20px 10px',
               }}
             >
               <h3>{method}()</h3>
+              <small>{methods[method].description}</small>
               {Object.keys(configFromStorage).map((provider) => {
                 const responsesKey = method + provider;
                 const methodExecution = methods[method][provider].toString();
@@ -157,10 +169,7 @@ const handleLoginSuccess = (provider) => (result) => {
                     >
                       <pre>{methodExecutionExample}</pre>
                       <Tooltip
-                        title={
-                          !authFromStorage[provider] &&
-                          `Make sure "Login ${provider}" clicked. Otherwise, call to get an error.`
-                        }
+                        title={`Make sure "Login ${provider}" clicked. Otherwise, call to get an error.`}
                       >
                         <button
                           type="button"
@@ -193,18 +202,18 @@ const handleLoginSuccess = (provider) => (result) => {
                     </div>
                     {responses[responsesKey] && (
                       <ReactJson
-                        name={false}
-                        theme="harmonic"
-                        src={responses[responsesKey].response}
+                        collapseStringsAfterLength={35}
                         indentWidth={4}
+                        name={false}
+                        src={responses[responsesKey].response}
                         style={{ padding: 20 }}
-                        collapseStringsAfterLength={40}
+                        theme="harmonic"
                       />
                     )}
                   </div>
                 );
               })}
-            </div>
+            </Paper>
           ))}
         </>
       );
@@ -212,3 +221,9 @@ const handleLoginSuccess = (provider) => (result) => {
   </ImplicitAuthContext.Consumer>
 </ImplicitAuthProvider>;
 ```
+
+### Events
+
+There are special circumstances when listening to the events is more convenient or even required.
+The `ImplicitAuthProvider` component besides regular methods passes event methods.
+For this purpose used a tiny event emitter - [mitt](https://github.com/developit/mitt).

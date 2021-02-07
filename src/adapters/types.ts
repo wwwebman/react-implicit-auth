@@ -25,6 +25,7 @@ export enum Events {
   autoLogin = 'autoLogin',
   error = 'error',
   init = 'init',
+  reInit = 'reInit',
   login = 'login',
   logout = 'logout',
   revoke = 'revoke',
@@ -45,9 +46,6 @@ export interface ProviderConfig {
   scope?: string;
 }
 
-/**
- * @see https://developers.facebook.com/docs/javascript/reference/FB.init
- */
 export interface FbConfig extends ProviderConfig {
   appId: string;
   cookie?: boolean;
@@ -56,9 +54,6 @@ export interface FbConfig extends ProviderConfig {
   xfbml?: boolean;
 }
 
-/**
- * @see https://developers.google.com/identity/sign-in/web/reference#gapiauth2clientconfig
- */
 export interface GoogleConfig extends ProviderConfig {
   apiKey?: string;
   clientId: string;
@@ -79,7 +74,7 @@ interface ApiRequestOptions {
 
 export interface MethodResult<TData = any> {
   provider: Provider;
-  data?: TData;
+  data: TData;
   event: string;
   message?: string;
   status?: string | number;
@@ -127,7 +122,7 @@ export interface AdapterMethods {
   logout(): Promise<MethodResult<null>>;
 
   /**
-   * Revoking login, de-authorize an app.
+   * De-authorizes app.
    */
   revoke(permissions?: string): Promise<MethodResult>;
 }

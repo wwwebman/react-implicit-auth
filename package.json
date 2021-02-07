@@ -1,7 +1,7 @@
 {
   "name": "react-implicit-auth",
   "version": "0.0.1",
-  "description": "A simple implicit social authorization provider for React SPA",
+  "description": "A simple implicit flow social authorization React Provider for SPA",
   "main": "index.js",
   "author": "Dmytro Chumak <hello@webman.pro> (https://webman.pro/)",
   "keywords": [
@@ -9,7 +9,10 @@
     "implicit",
     "auth",
     "authorization",
-    "provider"
+    "authentication",
+    "provider",
+    "grant",
+    "context"
   ],
   "scripts": {
     "start": "styleguidist server --port 3000",
@@ -29,7 +32,7 @@
     "@types/react-dom": "^17.0.0",
     "babel-loader": "^8.2.2",
     "prettier": "^2.2.1",
-    "react-docgen-typescript": "^1.20.5",
+    "react-docgen-typescript": "^1.21.0",
     "react-styleguidist": "^11.1.5",
     "typescript": "^4.1.3",
     "webpack": "^4.35.0"
@@ -37,6 +40,7 @@
   "dependencies": {
     "@babel/runtime": "^7.12.5",
     "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
     "mitt": "^2.1.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

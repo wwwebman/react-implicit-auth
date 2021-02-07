@@ -9,15 +9,9 @@ const FacebookLoginButton = () => {
   return <button onClick={() => auth.facebook.login()}>{children}</button>;
 };
 
-const App = () => {
+const MyApp = () => {
   return (
     <ImplicitAuthProvider
-      onInitError={(e) => {
-        alert(e);
-      }}
-      onAutoLoginError={(e) => {
-        alert(e);
-      }}
       config={{
         facebook: {
           debug: true,

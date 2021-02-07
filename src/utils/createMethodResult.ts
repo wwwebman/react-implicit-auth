@@ -1,19 +1,19 @@
 import { MethodResult } from '../adapters/types';
 
 const createMethodResult = ({
-  provider,
+  data,
   event,
-  message,
+  message = '',
+  provider,
   status = 'UNSPECIFIED',
   type,
-}: MethodResult) => {
-  return {
-    provider,
-    event,
-    message,
-    status,
-    type,
-  };
-};
+}: MethodResult): MethodResult => ({
+  data,
+  event,
+  message,
+  provider,
+  status,
+  type,
+});
 
 export default createMethodResult;

@@ -51,11 +51,7 @@ module.exports = {
   },
   propsParser: require('react-docgen-typescript').withCustomConfig(
     './tsconfig.json',
-    {
-      shouldExtractValuesFromUnion: true,
-      shouldExtractLiteralValuesFromEnum: true,
-      savePropValueAsString: true,
-    }
+
   ).parse,
   webpackConfig: {
     module: {
@@ -64,9 +60,7 @@ module.exports = {
           test: /\.(t|j)sx?$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
-        },
-        {test: /\.css$/, loader: 'css-loader'},
-        {test: /\.svg$/, loader: 'file-loader'}
+        }
       ],
     },
     resolve: {

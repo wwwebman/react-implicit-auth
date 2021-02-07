@@ -1,10 +1,11 @@
 import loadSdk from '../utils/loadSdk';
 import createMethodResult from '../utils/createMethodResult';
-import { AuthData, GoogleConfig } from './types';
+import { AuthData, GoogleConfig, MethodResult } from './types';
 import { Adapter, Events } from './types';
 import createEmitter from './emitter';
 import createAuth from '../utils/createAuth';
 import createUserProfile from '../utils/createUserProfile';
+import messages from '../utils/messages';
 
 interface GoogleApiResponse {
   statusText?: null | string;
@@ -19,6 +20,7 @@ interface GoogleApiResponse {
       }
     | object;
   body?: string;
+  details?: string;
   headers?: any;
   message?: string;
 }
@@ -29,24 +31,39 @@ const google: Adapter<GoogleConfig> = (
 ) => {
   const { on, off, emit, all } = createEmitter();
 
-  const handleLogin = (
+  const createLoginResult = (
     event: Events.login | Events.autoLogin,
-  ): Promise<AuthData> => {
-    return new Promise((resolve, reject) => {
-      const GoogleAuth = window.gapi.auth2.getAuthInstance();
+  ): MethodResult<AuthData> => {
+    const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
-      if (!GoogleAuth.isSignedIn.get()) {
-        return reject(
-          createMethodResult({
-            provider,
-            event,
-            message: 'Not authenticated.',
-            type: 'error',
-          }),
-        );
-      }
+    if (!GoogleAuth.isSignedIn.get()) {
+      const error = Error(messages.notAuthenticated);
+      error.message = messages.notAuthenticated;
 
-      resolve(createAuth(GoogleAuth.currentUser.get().getAuthResponse()));
+      throw error;
+    }
+
+    return createMethodResult({
+      data: createAuth(GoogleAuth.currentUser.get().getAuthResponse()),
+      event,
+      provider,
+      type: 'success',
+    });
+  };
+
+  const createMethodErrorResult = (event: Events, error: any) => {
+    return createMethodResult({
+      data: error,
+      provider,
+      event,
+      message:
+        error?.message ??
+        error?.details ??
+        error?.result?.error?.message ??
+        error?.statusText ??
+        messages.unexpected,
+      status: error?.result?.error?.status ?? error?.status ?? error?.error,
+      type: 'error',
     });
   };
 
@@ -72,11 +89,9 @@ const google: Adapter<GoogleConfig> = (
           provider,
           src: '//apis.google.com/js/api.js',
           onload() {
-            const gapi = window.gapi;
-
             const init = async () => {
               try {
-                await gapi.client.init({
+                await window.gapi.client.init({
                   apiKey,
                   clientId,
                   discoveryDocs,
@@ -84,7 +99,7 @@ const google: Adapter<GoogleConfig> = (
                 });
 
                 const successResult = createMethodResult({
-                  data: gapi,
+                  data: window.gapi,
                   event,
                   provider,
                   type: 'success',
@@ -93,27 +108,18 @@ const google: Adapter<GoogleConfig> = (
                 emit(event, successResult);
                 resolve(successResult);
               } catch (error) {
-                const errorResult = createMethodResult({
-                  provider,
-                  event,
-                  message: error?.message ?? error?.details,
-                  type: 'error',
-                  status: error?.error,
-                });
+                const errorResult = createMethodErrorResult(event, error);
 
                 emit(event, errorResult);
                 reject(errorResult);
               }
             };
 
-            gapi.load('client:auth2', init);
+            window.gapi.load('client:auth2', init);
           },
           onerror() {
-            const errorResult = createMethodResult({
-              provider,
-              event,
-              message: `Failed to load Google SDK.`,
-              type: 'error',
+            const errorResult = createMethodErrorResult(event, {
+              message: messages.sdkLoadFailed,
             });
 
             emit(event, errorResult);
@@ -125,6 +131,7 @@ const google: Adapter<GoogleConfig> = (
 
     /**
      * @see https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#callinganapi
+     * @see https://developers.google.com/apis-explorer
      */
     api({ path, method = 'GET', params = {}, body }) {
       const event = Events.api;
@@ -137,7 +144,6 @@ const google: Adapter<GoogleConfig> = (
             params,
             body,
           });
-
           const successResult = createMethodResult({
             provider,
             data: response?.result,
@@ -147,18 +153,8 @@ const google: Adapter<GoogleConfig> = (
 
           emit(event, successResult);
           resolve(successResult);
-        } catch (e) {
-          const errorResult = createMethodResult({
-            provider,
-            event,
-            message:
-              e?.message ??
-              e?.result?.error?.message ??
-              e?.statusText ??
-              'An unexpected error occurred.',
-            status: e?.result?.error?.status ?? e?.status,
-            type: 'error',
-          });
+        } catch (error) {
+          const errorResult = createMethodErrorResult(event, error);
 
           emit(Events.error, errorResult);
           reject(errorResult);
@@ -201,31 +197,17 @@ const google: Adapter<GoogleConfig> = (
       const event = Events.autoLogin;
 
       return new Promise((resolve, reject) => {
-        handleLogin(event)
-          .then((data) => {
-            const successResult = createMethodResult({
-              data,
-              event,
-              provider,
-              type: 'success',
-            });
+        try {
+          const successResult = createLoginResult(event);
 
-            emit(event, successResult);
-            resolve(successResult);
-          })
-          .catch((error) => {
-            const errorResult = createMethodResult({
-              data: error,
-              event,
-              message: error?.message ?? error?.details,
-              provider,
-              status: error?.error,
-              type: 'error',
-            });
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = createMethodErrorResult(event, error);
 
-            emit(Events.error, errorResult);
-            reject(errorResult);
-          });
+          emit(Events.error, errorResult);
+          reject(errorResult);
+        }
       });
     },
 
@@ -238,50 +220,20 @@ const google: Adapter<GoogleConfig> = (
     login() {
       const event = Events.login;
 
-      return new Promise((resolve, reject) => {
-        const GoogleAuth = window.gapi.auth2.getAuthInstance();
+      return new Promise(async (resolve, reject) => {
+        try {
+          const GoogleAuth = window.gapi.auth2.getAuthInstance();
+          await GoogleAuth.signIn();
+          const successResult = createLoginResult(event);
 
-        GoogleAuth.signIn()
-          .then(() =>
-            handleLogin(event)
-              .then((data) => {
-                const successResult = createMethodResult({
-                  data,
-                  event,
-                  provider,
-                  type: 'success',
-                });
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = createMethodErrorResult(event, error);
 
-                emit(event, successResult);
-                resolve(successResult);
-              })
-              .catch((error) => {
-                const errorResult = createMethodResult({
-                  data: error,
-                  event,
-                  message: error?.message ?? error?.details,
-                  provider,
-                  status: error?.error,
-                  type: 'error',
-                });
-
-                emit(Events.error, errorResult);
-                reject(errorResult);
-              }),
-          )
-          .catch((error: any) => {
-            const errorStatus = createMethodResult({
-              data: error,
-              event,
-              message: 'Login error occurred.',
-              provider,
-              status: error?.error,
-              type: 'error',
-            });
-
-            emit(Events.error, errorStatus);
-            reject(errorStatus);
-          });
+          emit(Events.error, errorResult);
+          reject(errorResult);
+        }
       });
     },
 
@@ -292,37 +244,22 @@ const google: Adapter<GoogleConfig> = (
     grant(scope) {
       const event = Events.login;
 
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const GoogleAuth = window.gapi.auth2.getAuthInstance();
         const GoogleUser = GoogleAuth.currentUser.get();
 
-        GoogleUser.grant({ scope }).then(() =>
-          handleLogin(event)
-            .then((data) => {
-              const successResult = createMethodResult({
-                data,
-                event,
-                provider,
-                type: 'success',
-              });
+        try {
+          await GoogleUser.grant({ scope });
+          const successResult = createLoginResult(event);
 
-              emit(event, successResult);
-              resolve(successResult);
-            })
-            .catch((error) => {
-              const errorStatus = createMethodResult({
-                data: error,
-                event,
-                message: error?.error ?? error?.message,
-                provider,
-                status: error,
-                type: 'error',
-              });
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = createMethodErrorResult(event, error);
 
-              emit(Events.error, errorStatus);
-              reject(errorStatus);
-            }),
-        );
+          emit(Events.error, errorResult);
+          reject(errorResult);
+        }
       });
     },
 
@@ -332,34 +269,26 @@ const google: Adapter<GoogleConfig> = (
     logout() {
       const event = Events.logout;
 
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
-        GoogleAuth.signOut()
-          .then(() => {
-            const successResult = createMethodResult({
-              data: null,
-              event,
-              provider,
-              type: 'success',
-            });
-
-            emit(event, successResult);
-            resolve(successResult);
-          })
-          .catch((error: any) => {
-            const errorStatus = createMethodResult({
-              data: error,
-              event,
-              message: error?.message,
-              provider,
-              status: error,
-              type: 'error',
-            });
-
-            emit(Events.error, errorStatus);
-            reject(errorStatus);
+        try {
+          await GoogleAuth.signOut();
+          const successResult = createMethodResult({
+            data: null,
+            event,
+            provider,
+            type: 'success',
           });
+
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = createMethodErrorResult(event, error);
+
+          emit(Events.error, errorResult);
+          reject(errorResult);
+        }
       });
     },
 
@@ -369,34 +298,26 @@ const google: Adapter<GoogleConfig> = (
     revoke() {
       const event = Events.revoke;
 
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
-        GoogleAuth.disconnect()
-          .then((data: any) => {
-            const successResult = createMethodResult({
-              data,
-              event,
-              provider,
-              type: 'success',
-            });
-
-            emit(event, successResult);
-            resolve(successResult);
-          })
-          .catch((error: any) => {
-            const errorStatus = createMethodResult({
-              data: error,
-              event,
-              message: error?.error ?? error?.message,
-              provider,
-              status: error,
-              type: 'error',
-            });
-
-            emit(Events.error, errorStatus);
-            reject(errorStatus);
+        try {
+          const data = await GoogleAuth.disconnect();
+          const successResult = createMethodResult({
+            data,
+            event,
+            provider,
+            type: 'success',
           });
+
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = createMethodErrorResult(event, error);
+
+          emit(Events.error, errorResult);
+          reject(errorResult);
+        }
       });
     },
   };

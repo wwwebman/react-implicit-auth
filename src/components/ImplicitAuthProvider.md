@@ -40,4 +40,6 @@ const MyApp = () => (
     <MyPage />
   </ImplicitAuthProvider>
 );
+
+export default MyApp;
 ```

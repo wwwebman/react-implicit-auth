@@ -55,10 +55,7 @@ const handleInitError = (error) => {
   alert(JSON.stringify(error, null, 2));
 };
 
-<ImplicitAuthProvider
-  config={configFromStorage}
-  onInitError={handleInitError}
->
+<ImplicitAuthProvider config={configFromStorage} onInitError={handleInitError}>
   <ImplicitAuthContext.Consumer>
     {(auth) => {
       const methods = {
@@ -128,7 +125,7 @@ const handleInitError = (error) => {
               </div>
             )}
           </div>
-          <h2>Methods</h2>
+          <h2>Core Methods</h2>
           <p>
             Using ImplicitAuthProvider the following methods get accessible in
             the React context.
@@ -222,8 +219,71 @@ const handleInitError = (error) => {
 </ImplicitAuthProvider>;
 ```
 
-### Events
+### Event Methods
 
-There are special circumstances when listening to the events is more convenient or even required.
-The `ImplicitAuthProvider` component besides regular methods passes event methods.
-For this purpose used a tiny event emitter - [mitt](https://github.com/developit/mitt).
+Beside core methods the `ImplicitAuthProvider` component passes **event** emitter methods.
+The emitter functionality comes from **mitt** - event emitter library.
+The API documentation you can find [here](https://github.com/developit/mitt#api).
+
+##### When it can be helpful?
+
+If you call core methods in multiple places but store data in a root component
+the events listening might be a good solution.
+
+A core method call causes the event gets triggered("login", "logout", etc.).
+Also there a special **error** event which occurs when a core method call crashes.
+
+##### Example
+
+```jsx static
+import { useImplicitAuth } from 'react-implicit-auth';
+
+/**
+ * Don't forget to put the following component as child of `ImplicitAuthProvider`.
+ */
+const Root = () => {
+  const auth = useImplicitAuth();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const handleLoginEvent = async () => {
+      const user = await auth.getUserProfile();
+
+      setUser(user.data);
+    };
+
+    const handleLogoutEvent = async () => {
+      setUser(null);
+    };
+
+    /**
+     * If autoLogin is failed it makes sense to redirect a user
+     * to the login view.
+     */
+    const handleErrorEvent = ({ event }) => {
+      if (event === 'autoLogin') {
+        router.push('/login');
+      }
+    };
+
+    authClient?.on?.('login', handleLoginEvent);
+    authClient?.on?.('autoLogin', handleLoginEvent);
+    authClient?.on?.('logout', handleLogoutEvent);
+    authClient?.on?.('error', handleErrorEvent);
+
+    return () => {
+      authClient?.off?.('login', handleLoginEvent);
+      authClient?.off?.('autoLogin', handleLoginEvent);
+      authClient?.on?.('logout', handleLogoutEvent);
+      authClient?.off?.('error', handleErrorEvent);
+    };
+  }, [authClient]);
+
+  return <>{user && <span>Hello, {user.name}</span>}</>;
+};
+
+export default Root;
+```
+
+I hope you got the idea.
+In this example you see the global component that can react on every login/logout and keep this data in its state.

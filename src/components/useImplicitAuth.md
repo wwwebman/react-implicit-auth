@@ -26,4 +26,6 @@ const MyApp = () => {
     </ImplicitAuthProvider>
   );
 };
+
+export default MyApp;
 ```

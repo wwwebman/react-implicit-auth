@@ -15,7 +15,10 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Box from '@material-ui/core/Box';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const defaultConfig = useMemo(
   () =>
@@ -38,6 +41,7 @@ const configFromStorage = useMemo(() =>
   JSON.parse(localStorage.getItem('config') || defaultConfig, []),
 );
 const [configUpdated, setConfigUpdated] = useState(false);
+const [modifiedArgs, setModifiedArgs] = useState(false);
 const [authData, setAuthData] = useState({});
 const [responses, setResponses] = useState({});
 
@@ -51,6 +55,38 @@ const handleConfigChange = ({ updated_src }) => {
   }
 };
 
+const handleArgsChange = (key) => ({ updated_src }) => {
+  setModifiedArgs({ ...modifiedArgs, [key]: updated_src });
+};
+
+const handleExecuteCall = (key, cb, args) => async () => {
+  setResponses((state) => ({
+    ...state,
+    [key]: {
+      loading: true,
+    },
+  }));
+
+  try {
+    const data = await cb(modifiedArgs[key] || args);
+    setResponses((state) => ({
+      ...state,
+      [key]: {
+        response: data,
+        loading: false,
+      },
+    }));
+  } catch (error) {
+    setResponses((state) => ({
+      ...state,
+      [key]: {
+        response: error,
+        loading: false,
+      },
+    }));
+  }
+};
+
 const handleInitError = (error) => {
   alert(JSON.stringify(error, null, 2));
 };
@@ -60,41 +96,49 @@ const handleInitError = (error) => {
     {(auth) => {
       const methods = {
         login: {
-          facebook: () => auth.facebook.login(),
-          google: () => auth.google.login(),
-        },
-        init: {
-          facebook: () => auth.facebook.init(),
-          google: () => auth.google.init(),
-          description: `The method gets called on the ImplicitAuthProvider mount phase. You don't need to call manually it in most cases.`,
+          facebook: { func: () => auth.facebook.login() },
+          google: { func: () => auth.google.login() },
         },
         getUserProfile: {
-          facebook: () => auth.facebook.getUserProfile(),
-          google: () => auth.google.getUserProfile(),
+          facebook: { func: () => auth.facebook.getUserProfile() },
+          google: { func: () => auth.google.getUserProfile() },
         },
         grant: {
-          facebook: () => auth.facebook.grant(),
-          google: () => auth.google.grant(),
+          facebook: { func: () => auth.facebook.grant() },
+          google: {
+            func: (args) => auth.google.grant(args),
+            args: { scope: 'https://www.googleapis.com/auth/user.gender.read' },
+          },
         },
         api: {
-          facebook: () => auth.facebook.api({ path: '' }),
-          google: () =>
-            auth.google.api({
+          facebook: {
+            func: () => auth.facebook.api(),
+            args: { path: '' },
+          },
+          google: {
+            func: (args) => auth.google.api(args),
+            args: {
               path: 'https://people.googleapis.com/v1/people/me',
               params: { personFields: 'names' },
-            }),
+            },
+          },
         },
         logout: {
-          facebook: () => auth.facebook.logout(),
-          google: () => auth.google.logout(),
+          facebook: { func: () => auth.facebook.logout() },
+          google: { func: () => auth.google.logout() },
         },
         revoke: {
-          facebook: () => auth.facebook.revoke(),
-          google: () => auth.google.revoke(),
+          facebook: { func: () => auth.facebook.revoke() },
+          google: { func: () => auth.google.revoke() },
         },
         autoLogin: {
-          facebook: () => auth.facebook.autoLogin(),
-          google: () => auth.google.autoLogin(),
+          facebook: { func: () => auth.facebook.autoLogin() },
+          google: { func: () => auth.google.autoLogin() },
+        },
+        init: {
+          facebook: { func: () => auth.facebook.init(), execute: false },
+          google: { func: () => auth.google.init(), execute: false },
+          description: `The method gets called on the ImplicitAuthProvider mount phase. In most cases, you don't have to call it manually, but if you want to, use the following.`,
         },
       };
 
@@ -126,86 +170,72 @@ const handleInitError = (error) => {
             )}
           </div>
           <h2>Core Methods</h2>
-          <p>
-            Using ImplicitAuthProvider the following methods get accessible in
-            the React context.
-          </p>
-          {Object.keys(methods).map((method) => (
+          {Object.keys(methods).map((methodName) => (
             <Paper
-              key={method}
+              key={methodName}
               style={{
                 margin: '20px 0',
                 padding: '10px 20px 10px',
               }}
             >
-              <h3>{method}()</h3>
-              <small>{methods[method].description}</small>
+              <h3>{methodName}()</h3>
+              <small>{methods[methodName].description}</small>
               {Object.keys(configFromStorage).map((provider) => {
-                const responsesKey = method + provider;
-                const methodExecution = methods[method][provider].toString();
+                const key = methodName + provider;
+                const entry = methods[methodName][provider];
+                const execute = !(entry.execute === false);
+                const method = entry.func;
+                const args = entry.args;
                 const methodExecutionExample = /return([\s\S]*?)\;/.exec(
-                  methodExecution,
+                  method.toString(),
                 )[1];
 
                 return (
                   <div
-                    key={provider}
+                    key={key}
                     style={{
                       border: '1px #ccc solid',
-                      margin: '20px 0 10px',
+                      margin: '10px 0',
                       background: '#f7fdff',
                     }}
                   >
-                    <div
-                      style={{
-                        alignItems: 'flex-start',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: 10,
-                      }}
+                    <Box
+                      alignItems="center"
+                      display="flex"
+                      justifyContent="space-between"
+                      px={1}
                     >
                       <pre>{methodExecutionExample}</pre>
-                      <Tooltip
-                        title={`Make sure "Login ${provider}" clicked. Otherwise, call to get an error.`}
-                      >
-                        <button
+                      {execute && (
+                        <Button
                           type="button"
-                          onClick={() =>
-                            methods[method][provider]().then(
-                              (data) => {
-                                setResponses((state) => ({
-                                  ...state,
-                                  [responsesKey]: {
-                                    response: data,
-                                    type: 'SUCCESS',
-                                  },
-                                }));
-                              },
-                              (error) => {
-                                setResponses((state) => ({
-                                  ...state,
-                                  [responsesKey]: {
-                                    response: error,
-                                    type: 'ERROR',
-                                  },
-                                }));
-                              },
-                            )
-                          }
+                          onClick={handleExecuteCall(key, method, args)}
                         >
                           Execute
-                        </button>
-                      </Tooltip>
-                    </div>
-                    {responses[responsesKey] && (
+                        </Button>
+                      )}
+                    </Box>
+                    {args && (
+                      <ReactJson
+                        indentWidth={4}
+                        name={'args'}
+                        src={modifiedArgs[key] || args}
+                        style={{ padding: '10px 20px 20px' }}
+                        onEdit={handleArgsChange(key)}
+                      />
+                    )}
+                    {responses[key] && !responses[key].loading && (
                       <ReactJson
                         collapseStringsAfterLength={35}
                         indentWidth={4}
                         name={false}
-                        src={responses[responsesKey].response}
+                        src={responses[key].response}
                         style={{ padding: 20 }}
                         theme="harmonic"
                       />
+                    )}
+                    {responses[key] && responses[key].loading && (
+                      <LinearProgress />
                     )}
                   </div>
                 );

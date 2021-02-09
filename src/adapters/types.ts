@@ -24,10 +24,11 @@ export enum Events {
   api = 'api',
   autoLogin = 'autoLogin',
   error = 'error',
+  grant = 'grant',
   init = 'init',
-  reInit = 'reInit',
   login = 'login',
   logout = 'logout',
+  reInit = 'reInit',
   revoke = 'revoke',
   userProfile = 'userProfile',
 }
@@ -104,7 +105,7 @@ export interface AdapterMethods {
    * Using this method it's possible to set different scope then defined
    * in the initial config.
    */
-  grant(scope: string): Promise<MethodResult<AuthData>>;
+  grant({ scope }: { scope: string }): Promise<MethodResult<AuthData>>;
 
   /**
    * Initialize SDK provider script using config object.
@@ -122,9 +123,9 @@ export interface AdapterMethods {
   logout(): Promise<MethodResult<null>>;
 
   /**
-   * De-authorizes app.
+   * De-authorizes app revoking all of the scopes the user granted.
    */
-  revoke(permissions?: string): Promise<MethodResult>;
+  revoke(): Promise<MethodResult>;
 }
 
 export interface AdapterEmitter {

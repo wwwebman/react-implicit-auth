@@ -31,9 +31,7 @@ const google: Adapter<GoogleConfig> = (
 ) => {
   const { on, off, emit, all } = createEmitter();
 
-  const createLoginResult = (
-    event: Events.login | Events.autoLogin,
-  ): MethodResult<AuthData> => {
+  const createLoginResult = (event: string): MethodResult<AuthData> => {
     const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
     if (!GoogleAuth.isSignedIn.get()) {
@@ -241,8 +239,8 @@ const google: Adapter<GoogleConfig> = (
      * @see https://developers.google.com/identity/sign-in/web/reference#googleusergrantoptions
      * @see https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#incrementalAuth
      */
-    grant(scope) {
-      const event = Events.login;
+    grant({ scope }) {
+      const event = Events.grant;
 
       return new Promise(async (resolve, reject) => {
         const GoogleAuth = window.gapi.auth2.getAuthInstance();

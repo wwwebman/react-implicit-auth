@@ -208,7 +208,7 @@ const facebook: Adapter<FbConfig> = (
      * @see https://developers.facebook.com/docs/reference/javascript/FB.login
      */
     grant(scope) {
-      const event = Events.login;
+      const event = Events.grant;
 
       return new Promise((resolve, reject) => {
         window.FB.login(
@@ -248,12 +248,12 @@ const facebook: Adapter<FbConfig> = (
     /**
      * @see https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking
      */
-    revoke(permissionName) {
+    revoke() {
       const event = Events.revoke;
 
       return new Promise((resolve, reject) => {
         this.api({
-          path: `me/permissions/${permissionName}`,
+          path: `me/permissions`,
           method: 'DELETE',
         })
           .then((response) => {

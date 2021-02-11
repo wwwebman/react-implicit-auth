@@ -63,7 +63,7 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
   onInitError = () => {},
   onInitSuccess = () => {},
 }) => {
-  const adaptersApi = useMemo(() => createAdaptersApi(config), [config]);
+  const adaptersApi = useMemo(() => createAdaptersApi(config), []);
 
   useEffect(() => {
     Object.keys(adaptersApi).forEach(

@@ -35,8 +35,8 @@ const google: Adapter<GoogleConfig> = (
     const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
     if (!GoogleAuth.isSignedIn.get()) {
-      const error = Error(messages.notAuthenticated);
-      error.message = messages.notAuthenticated;
+      const error = Error(messages.not_authenticated);
+      error.message = messages.not_authenticated;
 
       throw error;
     }
@@ -116,8 +116,12 @@ const google: Adapter<GoogleConfig> = (
             window.gapi.load('client:auth2', init);
           },
           onerror() {
-            const errorResult = createMethodErrorResult(event, {
-              message: messages.sdkLoadFailed,
+            const errorResult = createMethodResult({
+              data: null,
+              event,
+              message: messages.sdk_load_failed,
+              provider,
+              type: 'error',
             });
 
             emit(event, errorResult);
@@ -163,28 +167,40 @@ const google: Adapter<GoogleConfig> = (
     getUserProfile() {
       const event = Events.userProfile;
 
-      return new Promise((resolve) => {
-        const GoogleUser = window.gapi.auth2
-          .getAuthInstance()
-          .currentUser.get()
-          .getBasicProfile();
-        const data = createUserProfile({
-          avatarUrl: GoogleUser.getImageUrl(),
-          email: GoogleUser.getEmail(),
-          firstName: GoogleUser.getGivenName(),
-          id: GoogleUser.getId(),
-          lastName: GoogleUser.getFamilyName(),
-          name: GoogleUser.getName(),
-        });
-        const successResult = createMethodResult({
-          data,
-          event,
-          provider,
-          type: 'success',
-        });
+      return new Promise((resolve, reject) => {
+        try {
+          const GoogleUser = window.gapi.auth2
+            .getAuthInstance()
+            .currentUser.get()
+            .getBasicProfile();
+          const successResult = createMethodResult({
+            data: createUserProfile({
+              avatarUrl: GoogleUser.getImageUrl(),
+              email: GoogleUser.getEmail(),
+              firstName: GoogleUser.getGivenName(),
+              id: GoogleUser.getId(),
+              lastName: GoogleUser.getFamilyName(),
+              name: GoogleUser.getName(),
+            }),
+            event,
+            provider,
+            type: 'success',
+          });
 
-        emit(event, successResult);
-        resolve(successResult);
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = createMethodResult({
+            data: { error: error.message },
+            event,
+            message: messages.unknown,
+            provider,
+            type: 'error',
+          });
+
+          emit(event, errorResult);
+          reject(errorResult);
+        }
       });
     },
 
@@ -300,9 +316,9 @@ const google: Adapter<GoogleConfig> = (
         const GoogleAuth = window.gapi.auth2.getAuthInstance();
 
         try {
-          const data = await GoogleAuth.disconnect();
+          await GoogleAuth.disconnect();
           const successResult = createMethodResult({
-            data,
+            data: null,
             event,
             provider,
             type: 'success',

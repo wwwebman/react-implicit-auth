@@ -87,11 +87,11 @@ const handleExecuteCall = (key, cb, args) => async () => {
   }
 };
 
-const handleInitError = (error) => {
-  alert(JSON.stringify(error, null, 2));
-};
-
-<ImplicitAuthProvider config={configFromStorage} onInitError={handleInitError}>
+<ImplicitAuthProvider
+  config={configFromStorage}
+  onInitError={console.error}
+  onAutoLoginError={console.error}
+>
   <ImplicitAuthContext.Consumer>
     {(auth) => {
       const methods = {
@@ -104,7 +104,10 @@ const handleInitError = (error) => {
           google: { func: () => auth.google.getUserProfile() },
         },
         grant: {
-          facebook: { func: () => auth.facebook.grant() },
+          facebook: {
+            func: (args) => auth.facebook.grant(args),
+            args: { scope: 'email,ads_read' },
+          },
           google: {
             func: (args) => auth.google.grant(args),
             args: { scope: 'https://www.googleapis.com/auth/user.gender.read' },
@@ -112,14 +115,19 @@ const handleInitError = (error) => {
         },
         api: {
           facebook: {
-            func: () => auth.facebook.api(),
-            args: { path: '' },
+            func: (args) => auth.facebook.api(args),
+            args: {
+              method: 'GET',
+              params: { fields: 'last_name' },
+              path: '/me',
+            },
           },
           google: {
             func: (args) => auth.google.api(args),
             args: {
-              path: 'https://people.googleapis.com/v1/people/me',
+              method: 'GET',
               params: { personFields: 'names' },
+              path: 'https://people.googleapis.com/v1/people/me',
             },
           },
         },
@@ -174,8 +182,9 @@ const handleInitError = (error) => {
             <Paper
               key={methodName}
               style={{
+                background: '#fbfeff',
                 margin: '20px 0',
-                padding: '10px 20px 10px',
+                padding: '5px 20px',
               }}
             >
               <h3>{methodName}()</h3>
@@ -195,7 +204,7 @@ const handleInitError = (error) => {
                     key={key}
                     style={{
                       border: '1px #ccc solid',
-                      margin: '10px 0',
+                      margin: '10px 0 20px',
                       background: '#f7fdff',
                     }}
                   >

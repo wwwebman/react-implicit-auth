@@ -1,4 +1,4 @@
-import { Adapter, AuthData } from './types';
+import { Adapter, AuthData, MethodResult } from './types';
 import createEmitter from './emitter';
 import { FbConfig, Events } from './types';
 
@@ -6,10 +6,20 @@ import createAuth from '../utils/createAuth';
 import createMethodResult from '../utils/createMethodResult';
 import createUserProfile from '../utils/createUserProfile';
 import loadSdk from '../utils/loadSdk';
+import messages from '../utils/messages';
 
 export interface FbApiResponse {
   data: any;
-  error?: { message?: string };
+  error?: {
+    code: number;
+    error_subcode: number;
+    error_user_msg: string;
+    error_user_title: string;
+    fbtrace_id: string;
+    message?: string;
+    status: number;
+    type: string;
+  };
   method?: 'get' | 'post' | 'delete';
   params?: object;
   path?: string;
@@ -42,30 +52,34 @@ const facebook: Adapter<FbConfig> = (
     ? `//connect.facebook.net/${lang}/sdk/debug.js`
     : `//connect.facebook.net/${lang}/sdk.js`;
 
-  const handleLogin = (
+  const createLoginResult = (
+    event: string,
     { status, authResponse }: FbAuthResponse,
-    event: Events.login | Events.autoLogin,
-  ): Promise<AuthData> => {
-    return new Promise((resolve, reject) => {
-      if (status === 'connected' && authResponse) {
-        return resolve(createAuth(authResponse));
-      }
+  ): MethodResult<AuthData> => {
+    if (status !== 'connected' || !authResponse) {
+      const error = Error(messages[status]);
+      error.message = messages[status];
+      (error as any).status = status;
 
-      const messages = {
-        connected: 'Connected.',
-        not_authorized: "The user hasn't authorized the application.",
-        unknown: "The user isn't logged or an unknown error occurred.",
-      };
+      throw error;
+    }
 
-      return reject(
-        createMethodResult({
-          provider,
-          event,
-          message: messages[status],
-          status,
-          type: 'error',
-        }),
-      );
+    return createMethodResult({
+      data: createAuth(authResponse),
+      event,
+      provider,
+      type: 'success',
+    });
+  };
+
+  const createMethodErrorResult = (event: Events, error: any) => {
+    return createMethodResult({
+      data: error,
+      provider,
+      event,
+      message: error?.message ?? messages.unexpected,
+      status: error?.status,
+      type: 'error',
     });
   };
 
@@ -93,15 +107,12 @@ const facebook: Adapter<FbConfig> = (
             FB.init({ appId, cookie, version, xfbml });
           },
           onerror() {
-            const errorStatus = createMethodResult({
-              provider,
-              event,
-              message: 'Failed to load Facebook window.FB.',
-              type: 'error',
+            const errorResult = createMethodErrorResult(event, {
+              message: messages.sdk_load_failed,
             });
 
-            emit(Events.error, errorStatus);
-            reject(errorStatus);
+            emit(event, errorResult);
+            reject(errorResult);
           },
         });
       });
@@ -117,9 +128,11 @@ const facebook: Adapter<FbConfig> = (
         window.FB.api(path, method, params, (response: FbApiResponse) => {
           if (!response || response.error) {
             const errorStatus = createMethodResult({
-              provider,
+              data: response.error,
               event,
-              message: response?.error?.message ?? 'An unexpected error occurred.',
+              message: response?.error?.message ?? messages.unexpected,
+              provider,
+              status: response.error.status,
               type: 'error',
             });
 
@@ -128,10 +141,10 @@ const facebook: Adapter<FbConfig> = (
           }
 
           const successResponse = createMethodResult({
-            provider,
-            data: response?.data ?? {},
+            data: response,
             event,
-            type: 'error',
+            provider,
+            type: 'success',
           });
 
           emit(event, successResponse);
@@ -143,16 +156,28 @@ const facebook: Adapter<FbConfig> = (
     getUserProfile() {
       const event = Events.userProfile;
 
-      return new Promise((resolve, reject) => {
-        this.api({
-          path: 'me',
-          params: { fields: 'email,name,id,first_name,last_name,picture' },
-        }).then(({ data }) => {
-          const profile = createUserProfile(data);
+      return new Promise(async (resolve, reject) => {
+        try {
+          const data = await this.api({
+            path: 'me',
+            params: { fields: 'email,name,id,first_name,last_name,picture' },
+          });
 
-          emit(event, profile);
-          resolve(profile);
-        }, reject);
+          const successResult = createMethodResult({
+            data: createUserProfile(data.data),
+            event,
+            provider,
+            type: 'success',
+          });
+
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = { ...error, event };
+
+          reject(errorResult);
+          emit(Events.error, errorResult);
+        }
       });
     },
 
@@ -164,15 +189,17 @@ const facebook: Adapter<FbConfig> = (
 
       return new Promise((resolve, reject) => {
         window.FB.getLoginStatus((response: FbAuthResponse) => {
-          handleLogin(response, event)
-            .then((auth) => {
-              emit(event, auth);
-              resolve(auth);
-            })
-            .catch((error) => {
-              emit(Events.error, error);
-              reject(error);
-            });
+          try {
+            const successResult = createLoginResult(event, response);
+
+            emit(event, successResult);
+            resolve(successResult);
+          } catch (error) {
+            const errorResult = createMethodErrorResult(event, error);
+
+            emit(Events.error, errorResult);
+            reject(errorResult);
+          }
         });
       });
     },
@@ -186,15 +213,17 @@ const facebook: Adapter<FbConfig> = (
       return new Promise((resolve, reject) => {
         window.FB.login(
           (response: FbAuthResponse) => {
-            handleLogin(response, event)
-              .then((auth) => {
-                emit(event, auth);
-                resolve(auth);
-              })
-              .catch((error) => {
-                emit(Events.error, error);
-                reject(error);
-              });
+            try {
+              const successResult = createLoginResult(event, response);
+
+              emit(event, successResult);
+              resolve(successResult);
+            } catch (error) {
+              const errorResult = createMethodErrorResult(event, error);
+
+              emit(Events.error, errorResult);
+              reject(errorResult);
+            }
           },
           {
             scope: initialScope,
@@ -207,21 +236,23 @@ const facebook: Adapter<FbConfig> = (
     /**
      * @see https://developers.facebook.com/docs/reference/javascript/FB.login
      */
-    grant(scope) {
+    grant({ scope }) {
       const event = Events.grant;
 
       return new Promise((resolve, reject) => {
         window.FB.login(
           (response: FbAuthResponse) => {
-            handleLogin(response, event)
-              .then((auth) => {
-                emit(event, auth);
-                resolve(auth);
-              })
-              .catch((error) => {
-                emit(Events.error, error);
-                reject(error);
-              });
+            try {
+              const successResult = createLoginResult(event, response);
+
+              emit(event, successResult);
+              resolve(successResult);
+            } catch (error) {
+              const errorResult = createMethodErrorResult(event, error);
+
+              emit(Events.error, errorResult);
+              reject(errorResult);
+            }
           },
           {
             scope,
@@ -239,8 +270,15 @@ const facebook: Adapter<FbConfig> = (
 
       return new Promise((resolve) => {
         window.FB.logout(() => {
-          resolve(null);
-          emit(event, null);
+          const successResult = createMethodResult({
+            data: null,
+            event,
+            provider,
+            type: 'success',
+          });
+
+          emit(event, successResult);
+          resolve(successResult);
         });
       });
     },
@@ -251,16 +289,28 @@ const facebook: Adapter<FbConfig> = (
     revoke() {
       const event = Events.revoke;
 
-      return new Promise((resolve, reject) => {
-        this.api({
-          path: `me/permissions`,
-          method: 'DELETE',
-        })
-          .then((response) => {
-            emit(event, response);
-            resolve(response);
-          })
-          .catch(reject);
+      return new Promise(async (resolve, reject) => {
+        try {
+          await this.api({
+            path: `me/permissions`,
+            method: 'DELETE',
+          });
+
+          const successResult = createMethodResult({
+            data: null,
+            event,
+            provider,
+            type: 'success',
+          });
+
+          emit(event, successResult);
+          resolve(successResult);
+        } catch (error) {
+          const errorResult = { ...error, event };
+
+          reject(errorResult);
+          emit(Events.error, errorResult);
+        }
       });
     },
   };

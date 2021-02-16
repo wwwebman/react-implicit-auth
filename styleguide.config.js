@@ -11,12 +11,12 @@ module.exports = {
   skipComponentsWithoutExample: true,
   sections: [
     {
+      components: 'src/components/**/*.{jsx,tsx,ts,js}',
       content: 'README.md',
       exampleMode: 'expand',
-      usageMode: 'expand',
-      components: 'src/components/**/*.{jsx,tsx,ts,js}',
       pagePerSection: true,
       sectionDepth: 1,
+      usageMode: 'expand',
     },
   ],
   styleguideDir: './dist/doc',

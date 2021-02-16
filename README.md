@@ -24,7 +24,7 @@ Here you can find what API providers the component delivers:
 
 ## Motivation
 
-The motivation of the component is unification.
+The motivation of the component is a unification of social provides API..
 It solves few problems:
 
 - A different methods naming, API usage, responses.

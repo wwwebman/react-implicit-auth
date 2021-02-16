@@ -1,8 +1,8 @@
-<div style="text-align: center;">
+<div align="center">
   <a href="https://webman.pro">
     <img alt="react-implicit-auth" src="/logo.svg" width="100px"  />
   </a>
-  <h1 style="text-align: center;">React Implicit Authorization</h1>
+  <h1 align="center">React Implicit Authorization</h1>
   <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md">
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="Contributions">
   </a>

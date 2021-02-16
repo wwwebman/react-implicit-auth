@@ -78,10 +78,14 @@ const styles = ({
     textAlign: 'center',
   },
   footer: {
-    display: 'block',
+    alignItems: 'center',
     color: color.light,
+    display: 'flex',
     fontFamily: fontFamily.base,
     fontSize: fontSize.small,
+    justifyContent: 'center',
+    padding: space[2],
+    flexDirection: 'column',
   },
 });
 
@@ -105,8 +109,20 @@ const CustomStyleGuideRenderer = ({
         </header>
         {children}
         <footer className={classes.footer}>
-          <b>{title}</b> developed by{' '}
-          <Link href="https://webman.pro">webman</Link>.
+          <Link href="https://webman.pro">
+            <img
+              alt="webman.pro logo"
+              src="https://webman.pro/logo.svg"
+              title="webman.pro"
+              width="40"
+            />
+          </Link>
+          <span>
+            Developed by{' '}
+            <Link href="https://webman.pro" title="webman.pro">
+              webman
+            </Link>
+          </span>
         </footer>
       </main>
       {hasSidebar && (

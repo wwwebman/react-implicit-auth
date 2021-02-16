@@ -1,10 +1,9 @@
 const path = require('path');
-const { name: packageName, version } = require('./package.json');
+const { name: packageName, version, description } = require('./package.json');
 const { theme, styles } = require('./styleguide/styles');
 
 module.exports = {
-  assetsDir: './assets',
-  title: packageName,
+  title: description,
   pagePerSection: true,
   version,
   theme,
@@ -12,25 +11,12 @@ module.exports = {
   skipComponentsWithoutExample: true,
   sections: [
     {
-      name: 'Introduction',
       content: 'README.md',
-    },
-    {
-      name: 'API Reference',
       exampleMode: 'expand',
       usageMode: 'expand',
       components: 'src/components/**/*.{jsx,tsx,ts,js}',
       pagePerSection: true,
       sectionDepth: 1,
-    },
-    {
-      name: 'Examples',
-      sections: [
-        {
-          name: 'Basic',
-          content: 'examples/basic.md',
-        },
-      ],
     },
   ],
   styleguideDir: './dist/doc',

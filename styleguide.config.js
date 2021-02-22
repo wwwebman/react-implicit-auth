@@ -19,7 +19,7 @@ module.exports = {
       usageMode: 'expand',
     },
   ],
-  styleguideDir: './dist/doc',
+  styleguideDir: './docs',
   styleguideComponents: {
     StyleGuideRenderer: path.join(
       __dirname,

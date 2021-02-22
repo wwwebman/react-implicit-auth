@@ -2,8 +2,12 @@
   "name": "react-implicit-auth",
   "version": "0.0.1",
   "description": "react-implicit-auth - React Provider for social API providers and implicit flow authorization/authentication.",
-  "main": "index.js",
   "author": "Dmytro Chumak <hello@webman.pro> (https://webman.pro/)",
+  "homepage": "https://ria.webman.pro",
+  "main": "lib/index.js",
+  "module": "esm/index.js",
+  "types": "lib/index.d.ts",
+  "typings": "lib/index.d.ts",
   "keywords": [
     "react",
     "implicit",
@@ -16,8 +20,13 @@
   ],
   "scripts": {
     "start": "styleguidist server --port 3000",
-    "build": "styleguidist build",
-    "format": "prettier --write src styleguide examples"
+    "build:docs": "styleguidist build",
+    "build:cjs": "tsc",
+    "build:es": "tsc -m esNext --outDir esm",
+    "lint:types": "tsc --noEmit",
+    "build": "yarn build:cjs && yarn build:es",
+    "format": "prettier --write src styleguide",
+    "clean": "rm -rf lib esm docs"
   },
   "repository": {
     "type": "git",
@@ -31,6 +40,8 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "babel-loader": "^8.2.2",
+    "husky": "4.3.8",
+    "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "react-docgen-typescript": "^1.21.0",
     "react-styleguidist": "^11.1.5",
@@ -47,8 +58,26 @@
     "react-json-view": "^1.21.1"
   },
   "engines": {
-    "yarn": "1.22.x",
     "node": ">=10.16.0"
+  },
+  "files": [
+    "lib/",
+    "esm/",
+    "package.json",
+    "*.md",
+    "LICENSE"
+  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "yarn lint:types"
+    }
+  },
+  "lint-staged": {
+    "src/**/**/*.{ts,tsx}": [
+      "prettier",
+      "git add"
+    ]
   },
   "license": "MIT"
 }

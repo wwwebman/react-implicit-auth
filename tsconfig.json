@@ -1,9 +1,10 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": ".",
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "declaration": true,
+    "downlevelIteration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
@@ -11,23 +12,20 @@
     "lib": ["dom", "es2015", "es2016", "es2017"],
     "module": "esnext",
     "moduleResolution": "node",
-    "noEmit": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "outDir": "lib",
     "preserveConstEnums": true,
-    "removeComments": false,
+    "removeComments": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "strict": false,
     "target": "es5",
-    "downlevelIteration": true
+    "pretty": true
   },
-  "include": ["src",
-    "global.d.ts"
-  ],
-  "exclude": ["node_modules"]
+  "include": ["src", "typings.d.ts"],
+  "exclude": ["node_modules", "lib", "esm", "docs"]
 }

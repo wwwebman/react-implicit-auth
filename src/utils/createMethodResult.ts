@@ -1,4 +1,4 @@
-import { MethodResult } from '../adapters/types';
+import { MethodResult } from 'src/adapters/types';
 
 const createMethodResult = ({
   data,

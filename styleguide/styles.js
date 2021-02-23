@@ -29,9 +29,9 @@ const styles = ({ borderRadius, fontSize }) => {
         '& p': {
           fontSize: fontSize.small,
           lineHeight: 1.4,
-        }
-      }
-    }
+        },
+      },
+    },
   };
 };
 

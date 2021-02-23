@@ -9,6 +9,7 @@ export interface ImplicitAuthProviderProps {
    * @see facebook: https://developers.facebook.com/docs/javascript/reference/FB.init
    * @see google: https://github.com/google/google-api-javascript-client/blob/master/docs/reference.md#----gapiclientinitargs--
    */
+
   config: Config;
 
   /**
@@ -49,6 +50,8 @@ export interface ImplicitAuthProviderProps {
   onAutoLoginSuccess?(auth?: any): void;
 }
 
+const defaultCb = () => {};
+
 /**
  * A React Context Provider component that passes into its context
  * unified social API methods and simplifies SDK initialization routine.
@@ -58,10 +61,10 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
   autoLogin = true,
   children,
   config,
-  onAutoLoginError = () => {},
-  onAutoLoginSuccess = () => {},
-  onInitError = () => {},
-  onInitSuccess = () => {},
+  onAutoLoginError = defaultCb,
+  onAutoLoginSuccess = defaultCb,
+  onInitError = defaultCb,
+  onInitSuccess = defaultCb,
 }) => {
   const adaptersApi = useMemo(() => createAdaptersApi(config), []);
 
@@ -81,7 +84,7 @@ const ImplicitAuthProvider: React.FC<ImplicitAuthProviderProps> = ({
         }
       },
     );
-  }, [adaptersApi]);
+  }, [defaultCb]);
 
   return (
     <ImplicitAuthContext.Provider value={adaptersApi}>

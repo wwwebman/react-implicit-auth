@@ -37,7 +37,6 @@ module.exports = {
   },
   propsParser: require('react-docgen-typescript').withCustomConfig(
     './tsconfig.json',
-
   ).parse,
   webpackConfig: {
     module: {
@@ -46,7 +45,7 @@ module.exports = {
           test: /\.(t|j)sx?$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
-        }
+        },
       ],
     },
     resolve: {

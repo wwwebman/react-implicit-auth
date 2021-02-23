@@ -55,16 +55,16 @@
     "eslint-config-react-app": "^6.0.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
-    "react": "^17.0.0",
     "react-docgen-typescript": "^1.21.0",
-    "react-dom": "^17.0.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
     "react-styleguidist": "^11.1.5",
     "typescript": "^4.1.5",
     "webpack": "^4.35.0"
   },
   "peerDependencies": {
-    "react": "^16.8.0  || ^17.0.0",
-    "react-dom": "^16.8.0  || ^17.0.0"
+    "react": "^16.8.0 || ^17.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",

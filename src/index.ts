@@ -1,3 +1,3 @@
-export { default as ImplicitAuthContext } from './components/ImplicitAuthContext';
-export { default as ImplicitAuthProvider } from './components/ImplicitAuthProvider';
-export { default as useImplicitAuth } from './components/useImplicitAuth';
+export { default as ImplicitAuthContext } from './ImplicitAuthContext';
+export { default as ImplicitAuthProvider } from './ImplicitAuthProvider';
+export { default as useImplicitAuth } from './useImplicitAuth';

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
-import type { Config } from '../adapters/types';
-import { createAdaptersApi } from '../adapters';
+import type { Config } from './adapters/types';
+import { createAdaptersApi } from './adapters';
 import ImplicitAuthContext from './ImplicitAuthContext';
 
 export interface ImplicitAuthProviderProps {

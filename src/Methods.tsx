@@ -1,4 +1,4 @@
-import { AdapterMethods } from '../adapters/types';
+import { AdapterMethods } from './adapters/types';
 
 /**
  * (!) The reason for existing this component is a styleguidist limitation

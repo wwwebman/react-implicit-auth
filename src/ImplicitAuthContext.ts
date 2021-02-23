@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import type { AdaptersApi } from '../adapters/types';
+import type { AdaptersApi } from './adapters/types';
 
 type ImplicitAuthContextProps = AdaptersApi;
 

@@ -11,7 +11,7 @@ module.exports = {
   skipComponentsWithoutExample: true,
   sections: [
     {
-      components: 'src/components/**/*.{jsx,tsx,ts,js}',
+      components: 'src/**/*.{jsx,tsx,ts,js}',
       content: 'README.md',
       exampleMode: 'expand',
       pagePerSection: true,

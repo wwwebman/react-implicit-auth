@@ -1,6 +1,6 @@
 {
   "name": "react-implicit-auth",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "react-implicit-auth - React Provider for social API providers and implicit flow authorization/authentication.",
   "author": "Dmytro Chumak <hello@webman.pro> (https://webman.pro/)",
   "homepage": "https://ria.webman.pro",

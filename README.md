@@ -12,6 +12,9 @@
   <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="License">
   </a>
+  <a href="https://app.netlify.com/sites/react-implicit-auth/deploys">
+    <img src="https://api.netlify.com/api/v1/badges/5ab989fd-4735-4f4c-a1be-7616fb1dc7ff/deploy-status" alt="netlify">
+  </a>
 </div>
 <br />
 

@@ -19,7 +19,7 @@
     "context"
   ],
   "scripts": {
-    "start": "styleguidist server --port 3000",
+    "start": "styleguidist server --port 3333",
     "build:docs": "styleguidist build",
     "build:cjs": "tsc",
     "build:es": "tsc -m esNext --outDir esm",

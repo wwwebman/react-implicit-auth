@@ -20,7 +20,8 @@
   ],
   "scripts": {
     "start": "styleguidist server --port 3333",
-    "build:docs": "styleguidist build",
+    "build:docs": "yarn clean && styleguidist build && yarn copy:assets",
+    "copy:assets": "cp logo.svg docs && cp favicon.ico docs",
     "build:cjs": "tsc",
     "build:es": "tsc -m esNext --outDir esm",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",

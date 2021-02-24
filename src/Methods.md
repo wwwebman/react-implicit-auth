@@ -13,8 +13,6 @@ In this case create you own configuring apps to get `clientId` or `appId`:
 - [google app registration](https://developers.google.com/identity/sign-in/web/sign-in)
 - [facebook app registration](https://developers.facebook.com/docs/development)
 
-
-
 ```jsx noeditor
 import ImplicitAuthContext from './ImplicitAuthContext';
 import ImplicitAuthProvider from './ImplicitAuthProvider';
@@ -335,3 +333,11 @@ export default Root;
 
 I hope you got the idea.
 In this example you see the global component that can react on every login/logout and keep this data in its state.
+
+### Policy
+
+The default config which includes application ids for google and facebook has only a demonstration purpose.
+The reason for having it is to save developers time if they haven't their own application registered.
+If a developer has its applications registered the default config might be replaced.
+
+Using the default config users can be sure that we don't collect,  use, or share any user's data.

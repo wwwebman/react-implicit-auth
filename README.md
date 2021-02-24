@@ -34,11 +34,11 @@ Technically it's a wrapper on top of the SDK interface delivered by social provi
 
 ## Install
 
-```sh
+```bash
 $ npm install react-implicit-auth
 ```
 
-```sh
+```bash
 $ yarn add react-implicit-auth
 ```
 

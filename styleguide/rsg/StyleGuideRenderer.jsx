@@ -128,8 +128,12 @@ const CustomStyleGuideRenderer = ({
       {hasSidebar && (
         <div className={classes.sidebar} data-testid="sidebar">
           <header className={classes.logo}>
-            <a href="/" title={title} className={classes.logoLink}>
-              <img src="/logo.svg" alt={title} className={classes.logoImage} />
+            <a href="/" title="Go to start page" className={classes.logoLink}>
+              <img
+                src="/logo.svg"
+                alt="react-implicit-auth logo"
+                className={classes.logoImage}
+              />
               {version}
             </a>
           </header>

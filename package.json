@@ -10,13 +10,14 @@
   "typings": "lib/index.d.ts",
   "keywords": [
     "react",
-    "implicit",
+    "implicit-flow",
     "auth",
     "authorization",
     "authentication",
-    "provider",
-    "grant",
-    "context"
+    "react-context",
+    "grant-flow",
+    "facebook-api",
+    "google-api"
   ],
   "scripts": {
     "start": "styleguidist server --port 3333",

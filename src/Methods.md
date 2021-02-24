@@ -31,7 +31,7 @@ const defaultConfig = useMemo(
     JSON.stringify({
       facebook: {
         debug: true,
-        appId: '****************',
+        appId: '448388196281027',
         cookie: true,
         version: 'v9.0',
         xfbml: true,

@@ -340,4 +340,4 @@ The default config which includes application ids for google and facebook has on
 The reason for having it is to save developers time if they haven't their own application registered.
 If a developer has its applications registered the default config might be replaced.
 
-Using the default config users can be sure that we don't collect,  use, or share any user's data.
+**Using the default config users can be sure that we don't collect, use, or share any user's data.**

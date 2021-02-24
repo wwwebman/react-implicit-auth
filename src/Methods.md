@@ -31,7 +31,7 @@ const defaultConfig = useMemo(
         xfbml: true,
       },
       google: {
-        clientId: '*.apps.googleusercontent.com',
+        clientId: '605972781713-7oms41umb38tt1tacas20rqr8mnbeoej.apps.googleusercontent.com',
         scope: 'profile email',
       },
     }),

@@ -61,6 +61,22 @@ See the documentation for more information about using react-implicit-auth packa
 - [Context Methods](https://react-implicit-auth.webman.pro/#methods)
 - [useImplicitAuth()](https://react-implicit-auth.webman.pro/#useimplicitauth)
 
+## Troubleshooting
+
+<details>
+<summary>After running yarn start browser complains that "your connection is not secure"?</summary>
+
+Ignore it and add an exception for this page.
+The page should have `https` to make because most of the providers require it.
+</details>
+
+<details>
+<summary>Google login doesn't work in incognito mode?</summary>
+
+This is one of the limitations of the implicit grant flow.
+Google login might not work in incognito mode or when third-party cookies are blocked: [issue](https://developers.google.com/identity/sign-in/web/troubleshooting).
+</details>
+
 ## Contributing
 
 If you want to contribute to react-implicit-auth please see the contributing [guideline](https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md).

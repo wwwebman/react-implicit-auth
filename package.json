@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "react-implicit-auth - React Provider for social API providers and implicit flow authorization/authentication.",
   "author": "Dmytro Chumak <hello@webman.pro> (https://webman.pro/)",
-  "homepage": "https://ria.webman.pro",
+  "homepage": "https://react-implicit-auth.webman.pro",
   "main": "lib/index.js",
   "module": "esm/index.js",
   "types": "lib/index.d.ts",

@@ -3,14 +3,20 @@
     <img alt="react-implicit-auth" src="/logo.svg" width="100px"  />
   </a>
   <h1 align="center">React Implicit Authorization</h1>
-  <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="Contributions">
+  <a href="https://www.npmjs.org/package/react-implicit-auth">
+    <img src="https://img.shields.io/npm/v/react-implicit-auth.svg" alt="npm">
+  </a>
+  <a href="https://bundlephobia.com/result?p=react-implicit-auth">
+    <img src="https://img.shields.io/bundlephobia/min/react-implicit-auth?color=green" alt="bundlephobia">
   </a>
   <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/github/contributors/wwwebman/react-implicit-auth.svg" alt="Contributors">
+    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?color=green" alt="Contributions">
+  </a>
+  <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md">
+    <img src="https://img.shields.io/github/contributors/wwwebman/react-implicit-auth" alt="Contributors">
   </a>
   <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="License">
+    <img src="https://img.shields.io/github/license/mashape/apistatus" alt="License">
   </a>
   <a href="https://app.netlify.com/sites/react-implicit-auth/deploys">
     <img src="https://api.netlify.com/api/v1/badges/5ab989fd-4735-4f4c-a1be-7616fb1dc7ff/deploy-status" alt="netlify">
@@ -18,34 +24,43 @@
 </div>
 <br />
 
-**react-implicit-auth** - React Provider for social API providers.
-It handles authorization or authentication using the [implicit flow](https://oauth.net/2/grant-types/implicit/#:~:text=The%20Implicit%20flow%20was%20a,extra%20authorization%20code%20exchange%20step.) approach.
-Here you can find what API providers the component delivers:
+React Implicit Authorization is a React Provider component that simplifies the [implicit grant flow](https://oauth.net/2/grant-types/implicit/#:~:text=The%20Implicit%20flow%20was%20a,extra%20authorization%20code%20exchange%20step.)
+authorization and authentication process using the following social API providers:
 
 - [facebook](https://developers.facebook.com/docs/javascript)
 - [google](https://github.com/google/google-api-javascript-client)
 
+Technically it's a wrapper on top of the SDK interface delivered by social providers.
+
+## Install
+
+```sh
+$ npm install react-implicit-auth
+```
+
+```sh
+$ yarn add react-implicit-auth
+```
+
 ## Motivation
 
-The motivation of the component is a unification of social provides API..
-It solves few problems:
+The main idea is to unify the social provides API interface and solve the following problems:
 
 - A different methods naming, API usage, responses.
   The component tries to solve issue unifying stuff
-- A complex documentation. 
-  Using the component you save time for testing and reading docs.
+- A complex documentation.
+  Using the component you save time for testing and reading docs
 - A lack of auto initialization.
-  The component allows you to append SDK scripts and initialize them based on the configuration you provide.
-  
+  The component allows you to append SDK scripts and initialize them based on the configuration you provide
 
 ## Docs
 
 See the documentation for more information about using react-implicit-auth package.
 
-- [ImplicitAuthProvider](#implicitauthprovider)
-- [Context Methods](#methods)
-- [useImplicitAuth()](#useimplicitauth)
+- [ImplicitAuthProvider](https://react-implicit-auth.webman.pro/#implicitauthprovider)
+- [Context Methods](https://react-implicit-auth.webman.pro/#methods)
+- [useImplicitAuth()](https://react-implicit-auth.webman.pro/#useimplicitauth)
 
 ## Contributing
 
-If you want to contribute to react-implicit-auth please see our contributing and community [guideline](https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md).
+If you want to contribute to react-implicit-auth please see the contributing [guideline](https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md).

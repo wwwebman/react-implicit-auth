@@ -10,16 +10,13 @@
     <img src="https://img.shields.io/bundlephobia/min/react-implicit-auth?color=green" alt="bundlephobia">
   </a>
   <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?color=green" alt="Contributions">
-  </a>
-  <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/github/contributors/wwwebman/react-implicit-auth" alt="Contributors">
+    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen?color=green" alt="Contributions">
   </a>
   <a href="https://github.com/wwwebman/react-implicit-auth/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/mashape/apistatus" alt="License">
   </a>
-  <a href="https://app.netlify.com/sites/react-implicit-auth/deploys">
-    <img src="https://api.netlify.com/api/v1/badges/5ab989fd-4735-4f4c-a1be-7616fb1dc7ff/deploy-status" alt="netlify">
+  <a href="https://react-implicit-auth.webman.pro/#examples">
+    <img src="https://img.shields.io/badge/examples-🚀-9cf" alt="examples" />
   </a>
 </div>
 <br />
@@ -31,6 +28,10 @@ authorization and authentication process using the following social API provider
 - [google](https://github.com/google/google-api-javascript-client)
 
 Technically it's a wrapper on top of the SDK interface delivered by social providers.
+
+Read [docs](https://react-implicit-auth.webman.pro/) for more details.
+
+[![docs build netlify](https://api.netlify.com/api/v1/badges/5ab989fd-4735-4f4c-a1be-7616fb1dc7ff/deploy-status)](https://app.netlify.com/sites/react-implicit-auth/deploys)
 
 ## Install
 
@@ -68,6 +69,7 @@ See the documentation for more information about using react-implicit-auth packa
 
 Ignore it and add an exception for this page.
 The page should have `https` to make because most of the providers require it.
+
 </details>
 
 <details>
@@ -75,6 +77,7 @@ The page should have `https` to make because most of the providers require it.
 
 This is one of the limitations of the implicit grant flow.
 Google login might not work in incognito mode or when third-party cookies are blocked: [issue](https://developers.google.com/identity/sign-in/web/troubleshooting).
+
 </details>
 
 ## Contributing

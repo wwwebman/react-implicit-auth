@@ -5,7 +5,15 @@
 The config object gets distributed to each provider's adapter.
 You can modify the configuration or use the existing one.
 The configuration modification gets synchronized with local storage.
-Don't be afraid to refresh the page if you need.
+Don't be afraid to refresh the page.
+
+**The default configuration can have some limitations or not be working for you in some cases.**
+In this case create you own configuring apps to get `clientId` or `appId`:
+
+- [google app registration](https://developers.google.com/identity/sign-in/web/sign-in)
+- [facebook app registration](https://developers.facebook.com/docs/development)
+
+
 
 ```jsx noeditor
 import ImplicitAuthContext from './ImplicitAuthContext';
@@ -31,7 +39,8 @@ const defaultConfig = useMemo(
         xfbml: true,
       },
       google: {
-        clientId: '605972781713-7oms41umb38tt1tacas20rqr8mnbeoej.apps.googleusercontent.com',
+        clientId:
+          '605972781713-7oms41umb38tt1tacas20rqr8mnbeoej.apps.googleusercontent.com',
         scope: 'profile email',
       },
     }),

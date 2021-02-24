@@ -1,8 +1,8 @@
 `<ImplicitAuthProvider />` is a component that registers, loads, and creates unify social SDK methods.
 At the moment it handles the following SDK:
 
-- facebook
-- google
+- [facebook SDK](https://developers.facebook.com/docs/javascript/reference/FB.init)
+- [google SDK](https://github.com/google/google-api-javascript-client/blob/master/docs/reference.md#----gapiclientinitargs--)
 
 Put `<ImplicitAuthProvider />` somewhere high in your app, above components that might use its API:
 

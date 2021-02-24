@@ -1,7 +1,7 @@
 {
   "name": "react-implicit-auth",
   "version": "1.0.0",
-  "description": "react-implicit-auth - React Provider for social API providers and implicit flow authorization/authentication.",
+  "description": "react-implicit-auth is a React Provider component that simplifies the implicit grant flow authorization and authentication process using the following social API providers.",
   "author": "Dmytro Chumak <hello@webman.pro> (https://webman.pro/)",
   "homepage": "https://react-implicit-auth.webman.pro",
   "main": "lib/index.js",
